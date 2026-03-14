@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* Keep a minimal base reset; the app styling should come from Tailwind utilities. */
-* {
+/* * {
   box-sizing: border-box;
 }
 
@@ -9,7 +9,6 @@ body {
   margin: 0;
   min-width: 320px;
 }
-
 
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
@@ -78,4 +77,4 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
-}
+} */
