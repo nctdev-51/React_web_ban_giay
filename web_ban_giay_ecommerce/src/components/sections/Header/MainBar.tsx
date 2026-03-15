@@ -1,14 +1,15 @@
 import { useMemo, useRef, useState } from "react";
 import { MegaMenu, type MegaMenuData } from "./MegaBar";
+import { Link } from "react-router-dom";
 
 type NavItem = { label: string; href: string; menuKey?: string };
 
 const NAV: NavItem[] = [
-  { label: "New & Featured", href: "#new", menuKey: "new" },
-  { label: "Men", href: "#men", menuKey: "men" },
-  { label: "Women", href: "#women", menuKey: "women" },
-  { label: "Kids", href: "#kids", menuKey: "kids" },
-  { label: "Sale", href: "#sale" }, // không dropdown
+  { label: "New & Featured", href: "/category/new", menuKey: "new" },
+  { label: "Men", href: "/category/men", menuKey: "men" },
+  { label: "Women", href: "/category/women", menuKey: "women" },
+  { label: "Kids", href: "/category/kids", menuKey: "kids" },
+  { label: "Sale", href: "/category/sale" },
 ];
 
 export function MainNav() {
@@ -55,7 +56,7 @@ export function MainNav() {
               { label: "Hoodies", href: "#" },
               { label: "Jackets", href: "#" },
             ],
-          }
+          },
         ],
       },
       women: {
@@ -129,7 +130,7 @@ export function MainNav() {
         ],
       },
     }),
-    []
+    [],
   );
 
   function openMenu(key: string) {
@@ -161,13 +162,13 @@ export function MainNav() {
         </a>
 
         {/* Center nav */}
+        {/* Center nav */}
         <nav className="hidden md:flex items-center gap-7 text-sm font-medium">
           {NAV.map((item) => {
-            const isDropdown = Boolean(item.menuKey);
             return (
-              <a
+              <Link // <-- Thay thẻ <a> thành <Link>
                 key={item.label}
-                href={item.href}
+                to={item.href} // <-- Thay href thành to
                 className="text-slate-900 hover:opacity-70 py-4"
                 onMouseEnter={() => {
                   if (item.menuKey) openMenu(item.menuKey);
@@ -175,7 +176,7 @@ export function MainNav() {
                 }}
               >
                 {item.label}
-              </a>
+              </Link>
             );
           })}
         </nav>
@@ -190,10 +191,16 @@ export function MainNav() {
             />
           </label>
 
-          <button className="h-9 w-9 grid place-items-center rounded-full hover:bg-slate-100" aria-label="Favorites">
+          <button
+            className="h-9 w-9 grid place-items-center rounded-full hover:bg-slate-100"
+            aria-label="Favorites"
+          >
             ♡
           </button>
-          <button className="h-9 w-9 grid place-items-center rounded-full hover:bg-slate-100" aria-label="Cart">
+          <button
+            className="h-9 w-9 grid place-items-center rounded-full hover:bg-slate-100"
+            aria-label="Cart"
+          >
             🛍
           </button>
         </div>
