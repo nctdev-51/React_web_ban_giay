@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 
 // --- MOCK DATA (Chỉ giữ lại Hero Slides, các mảng tĩnh khác đã bị xoá) ---
 const heroSlides = [
@@ -111,7 +112,7 @@ export default function Home() {
                   <h1 className="text-4xl md:text-7xl font-extrabold uppercase">{slide.title}</h1>
                   <p className="text-base max-w-lg mx-auto">{slide.description}</p>
                   <div className="flex space-x-4 pt-4">
-                    <button className="bg-white text-black px-8 py-3 rounded-full font-semibold hover:bg-gray-200 transition pointer-events-auto">Shop Now</button>
+                    <Link to="/product/1" className="bg-white text-black px-8 py-3 rounded-full font-semibold hover:bg-gray-200 transition pointer-events-auto">Shop Now</Link>
                     <button className="bg-white text-black px-8 py-3 rounded-full font-semibold hover:bg-gray-200 transition pointer-events-auto">Learn More</button>
                   </div>
                 </div>
@@ -142,7 +143,11 @@ export default function Home() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {featuredData.map((item) => (
-                <div key={item.id} className="relative h-[500px] md:h-[700px] group cursor-pointer overflow-hidden bg-gray-100">
+                <Link
+                  key={item.id}
+                  to={`/product/${item.id}`}
+                  className="relative block h-[500px] md:h-[700px] group cursor-pointer overflow-hidden bg-gray-100"
+                >
                   {/* Nếu ảnh bị lỗi, dùng placeholder */}
                   <img 
                     src={item.thumbnail || item.images?.[0] || 'https://via.placeholder.com/800'} 
@@ -154,9 +159,9 @@ export default function Home() {
                   <div className="absolute bottom-10 left-10 text-white z-10">
                     <p className="text-sm uppercase tracking-wider">{item.category}</p>
                     <h3 className="text-2xl font-medium mb-4">{item.title}</h3>
-                    <button className="bg-white text-black px-6 py-2 rounded-full font-semibold hover:bg-gray-200 transition">Shop</button>
+                    <span className="inline-block bg-white text-black px-6 py-2 rounded-full font-semibold hover:bg-gray-200 transition">Shop</span>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
@@ -184,7 +189,11 @@ export default function Home() {
           ) : (
             <div ref={latestCarouselRef} className="flex overflow-x-auto gap-4 pb-4 hide-scrollbar snap-x">
               {latestData.map((product) => (
-                <div key={product.id} className="min-w-[300px] md:min-w-[400px] snap-start flex-shrink-0 cursor-pointer group">
+                <Link
+                  key={product.id}
+                  to={`/product/${product.id}`}
+                  className="min-w-[300px] md:min-w-[400px] snap-start flex-shrink-0 cursor-pointer group"
+                >
                   <div className="bg-[#f6f6f6] overflow-hidden mb-4 h-[300px] md:h-[400px] flex items-center justify-center">
                     <img 
                       src={product.thumbnail || product.images?.[0]} 
@@ -199,7 +208,7 @@ export default function Home() {
                     </div>
                     <p className="font-medium text-base whitespace-nowrap">{formatPrice(product.price)}</p>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
@@ -224,7 +233,11 @@ export default function Home() {
           ) : (
             <div ref={sportCarouselRef} className="flex overflow-x-auto gap-4 pb-4 hide-scrollbar snap-x">
               {sportData.map((sport) => (
-                <div key={sport.id} className="relative min-w-[280px] md:min-w-[380px] h-[350px] md:h-[480px] snap-start flex-shrink-0 cursor-pointer group overflow-hidden bg-gray-200">
+                <Link
+                  key={sport.id}
+                  to={`/product/${sport.id}`}
+                  className="relative min-w-[280px] md:min-w-[380px] h-[350px] md:h-[480px] snap-start flex-shrink-0 cursor-pointer group overflow-hidden bg-gray-200"
+                >
                   <img 
                     src={sport.thumbnail || sport.images?.[0]} 
                     alt={sport.title} 
@@ -236,7 +249,7 @@ export default function Home() {
                     <h3 className="text-2xl font-medium capitalize mb-1">{sport.category || "Sport"}</h3>
                     <p className="text-sm font-medium">{sport.title}</p>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
