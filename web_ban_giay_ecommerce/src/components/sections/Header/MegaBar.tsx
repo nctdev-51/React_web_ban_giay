@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 type MenuColumn = {
   title: string;
   links: { label: string; href: string }[];
@@ -9,29 +11,30 @@ export type MegaMenuData = {
 
 export function MegaMenu({ data }: { data: MegaMenuData }) {
   return (
-    <div className="border-t bg-white">
-      <div className="mx-auto max-w-6xl px-4 py-8">
-        <div className="grid gap-8 md:grid-cols-4">
-          {data.columns.map((col) => (
-            <div key={col.title}>
-              <div className="text-sm font-semibold text-slate-900">
-                {col.title}
-              </div>
-              <ul className="mt-3 space-y-2 text-sm">
-                {col.links.map((l) => (
-                  <li key={l.label}>
-                    <a
-                      href={l.href}
-                      className="text-slate-600 hover:text-slate-900"
-                    >
-                      {l.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+    // Thêm padding cho giống không gian thoáng của Nike
+    <div className="border-t bg-white pb-12 pt-8">
+      {/* Đổi sang flex và justify-center để căn giữa các cột */}
+      <div className="mx-auto max-w-[1200px] flex justify-center gap-12 lg:gap-20">
+        {data.columns.map((col) => (
+          <div key={col.title} className="w-[160px]">
+            {/* Tiêu đề cột màu đen */}
+            <div className="text-base font-medium text-black mb-4">
+              {col.title}
             </div>
-          ))}
-        </div>
+            <ul className="space-y-3 text-sm">
+              {col.links.map((l) => (
+                <li key={l.label}>
+                  <a
+                    href={l.href}
+                    className="text-gray-500 hover:text-black font-medium transition-colors"
+                  >
+                    {l.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </div>
     </div>
   );

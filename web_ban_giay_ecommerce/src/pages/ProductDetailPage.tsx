@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import { useDispatch } from "react-redux";
+import { addToCart } from "../store/cartSlice";
 import { useParams } from "react-router-dom";
 import type { Product, ProductSummary } from "../types/product";
 import { getProductById, getRelatedProducts } from "../lib/productsApi";
@@ -53,7 +55,9 @@ export function ProductDetailPage() {
         setRelatedProducts(related);
       } catch (err) {
         if (!mounted) return;
-        setError(err instanceof Error ? err.message : "Cannot load product details.");
+        setError(
+          err instanceof Error ? err.message : "Cannot load product details.",
+        );
       } finally {
         if (mounted) setIsLoading(false);
       }
@@ -68,10 +72,7 @@ export function ProductDetailPage() {
 
   const breadcrumbs = useMemo(() => {
     if (!product) {
-      return [
-        { label: "Home", to: "/" },
-        { label: "Product" },
-      ];
+      return [{ label: "Home", to: "/" }, { label: "Product" }];
     }
 
     return [
@@ -80,20 +81,25 @@ export function ProductDetailPage() {
       { label: product.title },
     ];
   }, [product]);
+  const dispatch = useDispatch();
 
   const handleAddToCart = () => {
     if (!product || !selectedSize) return;
-
-    console.log("Add to cart", {
-      productId: product.id,
-      title: product.title,
-      size: selectedSize,
-      quantity,
-    });
+    dispatch(
+      addToCart({
+        ...product,
+        selectedSize: selectedSize,
+        quantity: quantity,
+      }),
+    );
+    alert("Đã thêm vào giỏ hàng thành công!");
   };
-
   if (isLoading) {
-    return <div className="max-w-6xl mx-auto px-6 py-10">Loading product details...</div>;
+    return (
+      <div className="max-w-6xl mx-auto px-6 py-10">
+        Loading product details...
+      </div>
+    );
   }
 
   if (error || !product) {

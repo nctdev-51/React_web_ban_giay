@@ -1,33 +1,39 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux"; // <-- Thêm import Redux
 
-function GuestCheckout({ cartData, loading, error }) {
+// Xóa các props (cartData, loading, error) đi vì giờ ta dùng Redux
+function GuestCheckout() {
   const navigate = useNavigate();
 
+  // <-- Lấy giỏ hàng trực tiếp từ Redux thay vì truyền props
+  const cartItems = useSelector((state) => state.cart.items);
+
   const [formData, setFormData] = useState({
-    email: '',
-    firstName: '',
-    lastName: '',
-    address: '',
-    phone: '',
-    promoCode: '',
-    cardName: '',
-    cardNumber: '',
-    expiry: '',
-    cvv: '',
+    email: "",
+    firstName: "",
+    lastName: "",
+    address: "",
+    phone: "",
+    promoCode: "",
+    cardName: "",
+    cardNumber: "",
+    expiry: "",
+    cvv: "",
     sameBilling: true,
-    paymentMethod: 'card',
+    paymentMethod: "card",
   });
 
   const formatPrice = (price) => {
-    return Number(price || 0).toLocaleString('vi-VN') + '₫';
+    return Number(price || 0).toLocaleString("vi-VN") + "₫";
   };
 
-  const products = cartData?.products || [];
+  // Gán thẳng products bằng cartItems của Redux
+  const products = cartItems || [];
 
   const subtotal = products.reduce(
     (acc, item) => acc + (item.price || 0) * (item.quantity || 1),
-    0
+    0,
   );
 
   const shipping = products.length > 0 ? 250000 : 0;
@@ -41,35 +47,21 @@ function GuestCheckout({ cartData, loading, error }) {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    alert('Đặt hàng thành công (demo)');
+    alert("Đặt hàng thành công (demo)");
   };
 
-  if (loading) {
-    return <div className="text-center p-20 font-medium">Đang tải dữ liệu thanh toán...</div>;
-  }
-
-  if (error) {
-    return (
-      <div className="text-center p-20 text-red-500 font-medium">
-        Không tải được dữ liệu: {error}
-      </div>
-    );
-  }
-
+  // Nếu giỏ hàng trống thì báo lỗi và có nút quay lại (Giữ nguyên logic của bạn bạn)
   if (products.length === 0) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
         <p className="text-xl font-medium">Giỏ hàng đang trống.</p>
-        <Link
-          to="/"
-          className="px-6 py-3 rounded-full bg-black text-white"
-        >
+        <Link to="/" className="px-6 py-3 rounded-full bg-black text-white">
           Quay lại giỏ hàng
         </Link>
       </div>
@@ -81,7 +73,7 @@ function GuestCheckout({ cartData, loading, error }) {
       <div className="mx-auto max-w-5xl">
         <div className="mb-6">
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
             className="text-sm underline text-gray-700"
           >
             ← Quay lại giỏ hàng
@@ -175,7 +167,9 @@ function GuestCheckout({ cartData, loading, error }) {
               <h3 className="text-[18px] font-semibold mb-4">Vận chuyển</h3>
 
               <div className="text-sm text-gray-700">
-                <p className="font-medium mb-1">{formatPrice(shipping)} giao hàng</p>
+                <p className="font-medium mb-1">
+                  {formatPrice(shipping)} giao hàng
+                </p>
                 <p className="text-gray-500">Giao hàng tiêu chuẩn</p>
                 <p className="text-gray-500">Dự kiến: 20/03 - 27/03</p>
               </div>
@@ -207,12 +201,12 @@ function GuestCheckout({ cartData, loading, error }) {
                 <button
                   type="button"
                   onClick={() =>
-                    setFormData((prev) => ({ ...prev, paymentMethod: 'card' }))
+                    setFormData((prev) => ({ ...prev, paymentMethod: "card" }))
                   }
                   className={`w-full h-12 rounded-lg border px-4 flex items-center justify-between text-sm ${
-                    formData.paymentMethod === 'card'
-                      ? 'border-black bg-white'
-                      : 'border-gray-300 bg-white'
+                    formData.paymentMethod === "card"
+                      ? "border-black bg-white"
+                      : "border-gray-300 bg-white"
                   }`}
                 >
                   <span>Thẻ tín dụng hoặc thẻ ghi nợ</span>
@@ -222,12 +216,15 @@ function GuestCheckout({ cartData, loading, error }) {
                 <button
                   type="button"
                   onClick={() =>
-                    setFormData((prev) => ({ ...prev, paymentMethod: 'paypal' }))
+                    setFormData((prev) => ({
+                      ...prev,
+                      paymentMethod: "paypal",
+                    }))
                   }
                   className={`w-full h-12 rounded-lg border px-4 flex items-center justify-between text-sm ${
-                    formData.paymentMethod === 'paypal'
-                      ? 'border-black bg-white'
-                      : 'border-gray-300 bg-white'
+                    formData.paymentMethod === "paypal"
+                      ? "border-black bg-white"
+                      : "border-gray-300 bg-white"
                   }`}
                 >
                   <span>PayPal</span>
@@ -237,12 +234,15 @@ function GuestCheckout({ cartData, loading, error }) {
                 <button
                   type="button"
                   onClick={() =>
-                    setFormData((prev) => ({ ...prev, paymentMethod: 'applepay' }))
+                    setFormData((prev) => ({
+                      ...prev,
+                      paymentMethod: "applepay",
+                    }))
                   }
                   className={`w-full h-12 rounded-lg border px-4 flex items-center justify-between text-sm ${
-                    formData.paymentMethod === 'applepay'
-                      ? 'border-black bg-white'
-                      : 'border-gray-300 bg-white'
+                    formData.paymentMethod === "applepay"
+                      ? "border-black bg-white"
+                      : "border-gray-300 bg-white"
                   }`}
                 >
                   <span>Apple Pay</span>
@@ -250,9 +250,11 @@ function GuestCheckout({ cartData, loading, error }) {
                 </button>
               </div>
 
-              {formData.paymentMethod === 'card' && (
+              {formData.paymentMethod === "card" && (
                 <div className="space-y-3">
-                  <p className="text-sm text-gray-700">Nhập thông tin thanh toán:</p>
+                  <p className="text-sm text-gray-700">
+                    Nhập thông tin thanh toán:
+                  </p>
 
                   <input
                     type="text"
@@ -304,8 +306,8 @@ function GuestCheckout({ cartData, loading, error }) {
               )}
 
               <p className="text-[11px] text-gray-500 mt-6 leading-5">
-                Khi bấm <span className="font-medium">Đặt hàng</span>, bạn đồng ý với
-                Điều khoản sử dụng và Chính sách quyền riêng tư.
+                Khi bấm <span className="font-medium">Đặt hàng</span>, bạn đồng
+                ý với Điều khoản sử dụng và Chính sách quyền riêng tư.
               </p>
 
               <button
@@ -333,7 +335,8 @@ function GuestCheckout({ cartData, loading, error }) {
 
               {remainForFreeShip > 0 ? (
                 <div className="text-[12px] text-gray-600">
-                  Thêm {formatPrice(remainForFreeShip)} nữa để được miễn phí vận chuyển.
+                  Thêm {formatPrice(remainForFreeShip)} nữa để được miễn phí vận
+                  chuyển.
                 </div>
               ) : (
                 <div className="text-[12px] text-green-700 font-medium">
@@ -367,7 +370,9 @@ function GuestCheckout({ cartData, loading, error }) {
                     <p className="font-semibold">{product.title}</p>
                     <p className="text-gray-600">{product.category}</p>
                     <p className="text-gray-600">Kích thước: 35.5</p>
-                    <p className="text-gray-600">Số lượng: {product.quantity}</p>
+                    <p className="text-gray-600">
+                      Số lượng: {product.quantity}
+                    </p>
                     <p className="mt-1 font-medium">
                       {formatPrice((product.price || 0) * product.quantity)}
                     </p>
