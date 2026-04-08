@@ -14,36 +14,46 @@ export function AddToCartActions({
   const canAdd = Boolean(selectedSize);
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => onQuantityChange(Math.max(1, quantity - 1))}
-          className="h-10 w-10 rounded-full border border-slate-300 hover:border-slate-500"
-          aria-label="Decrease quantity"
-        >
-          -
-        </button>
+    <div className="space-y-6 pt-4">
+      {/* Bộ chọn số lượng */}
+      <div className="flex items-center gap-4">
+        <span className="text-sm font-medium text-gray-900">Số lượng:</span>
+        <div className="flex items-center gap-2 bg-gray-100 rounded-full px-2 py-1">
+          <button
+            type="button"
+            onClick={() => onQuantityChange(Math.max(1, quantity - 1))}
+            className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-gray-200 transition-colors text-lg"
+            aria-label="Decrease quantity"
+          >
+            -
+          </button>
 
-        <div className="min-w-14 text-center font-medium text-slate-900">{quantity}</div>
+          <div className="min-w-[2rem] text-center font-medium text-slate-900">
+            {quantity}
+          </div>
 
-        <button
-          type="button"
-          onClick={() => onQuantityChange(quantity + 1)}
-          className="h-10 w-10 rounded-full border border-slate-300 hover:border-slate-500"
-          aria-label="Increase quantity"
-        >
-          +
-        </button>
+          <button
+            type="button"
+            onClick={() => onQuantityChange(quantity + 1)}
+            className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-gray-200 transition-colors text-lg"
+            aria-label="Increase quantity"
+          >
+            +
+          </button>
+        </div>
       </div>
 
+      {/* Nút thêm vào giỏ */}
       <button
         type="button"
         onClick={onAddToCart}
-        disabled={!canAdd}
-        className="w-full h-12 rounded-full bg-black text-white font-medium hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+        className={`w-full py-4 rounded-full text-base font-medium transition-all duration-300 ${
+          canAdd
+            ? "bg-black text-white hover:bg-gray-800 shadow-lg hover:shadow-xl"
+            : "bg-gray-200 text-gray-500 cursor-not-allowed"
+        }`}
       >
-        {canAdd ? "Add to cart" : "Select a size first"}
+        Thêm vào giỏ hàng
       </button>
     </div>
   );

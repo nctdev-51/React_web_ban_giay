@@ -17,7 +17,7 @@ export function MainNav() {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const closeTimer = useRef<number | null>(null);
 
-  // <-- 2. Lấy dữ liệu Giỏ hàng từ Redux
+  // Lấy dữ liệu Giỏ hàng từ Redux
   const cartItems = useSelector((state: any) => state.cart?.items || []);
   const totalQuantity = cartItems.reduce(
     (acc: any, item: any) => acc + item.quantity,
@@ -154,27 +154,28 @@ export function MainNav() {
 
   return (
     <div
-      className="relative bg-white"
+      className="relative"
       onMouseLeave={scheduleClose}
       onMouseEnter={() => {
         if (closeTimer.current) window.clearTimeout(closeTimer.current);
       }}
     >
-      <div className="mx-auto max-w-6xl px-4 h-16 flex items-center justify-between gap-4">
+      {/* KHU VỰC ĐÃ FIX: Bao bọc thanh nav chính bằng relative z-50 và bg-white để nó luôn nổi trên cùng */}
+      <div className="relative z-50 bg-white mx-auto max-w-6xl px-4 h-16 flex items-center justify-between gap-4">
         {/* Logo */}
-        <a href="/" className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2">
           <div className="h-7 w-7 rounded bg-black" aria-hidden />
           <span className="sr-only">Home</span>
-        </a>
+        </Link>
 
         {/* Center nav */}
-        <nav className="hidden md:flex items-center gap-7 text-sm font-medium">
+        <nav className="hidden md:flex items-center gap-7 text-sm font-medium h-full">
           {NAV.map((item) => {
             return (
               <Link
                 key={item.label}
                 to={item.href}
-                className="text-slate-900 hover:opacity-70 py-4"
+                className="text-slate-900 hover:opacity-70 py-4 h-full flex items-center border-b-2 border-transparent hover:border-black transition-all"
                 onMouseEnter={() => {
                   if (item.menuKey) openMenu(item.menuKey);
                   else setActiveMenu(null);
@@ -203,7 +204,6 @@ export function MainNav() {
             ♡
           </button>
 
-          {/* <-- 3. Thay đổi Nút Giỏ hàng thành thẻ Link --> */}
           <Link
             to="/cart"
             className="relative h-9 w-9 grid place-items-center rounded-full hover:bg-slate-100"
@@ -222,12 +222,12 @@ export function MainNav() {
       {/* Dropdown panel */}
       {hasMenu && (
         <>
-          {/* <-- 4. Fix UI: Thêm z-40 cho nền mờ và bg-black/20 --> */}
-          <div className="fixed inset-0 top-16 bg-black/20 z-40 transition-opacity" />
+          {/* KHU VỰC ĐÃ FIX: Lớp phủ mờ hạ z-index xuống 30 và đặt top-[100px] để bắt đầu ngay dưới thanh Nav */}
+          <div className="fixed inset-0 top-[100px] bg-black/20 z-30 transition-opacity" />
 
-          {/* <-- 4. Fix UI: Thêm z-50 cho panel để nổi lên trên cùng --> */}
+          {/* KHU VỰC ĐÃ FIX: MegaMenu hạ z-index xuống 40 và dùng top-full để bám sát dưới chân thẻ relative */}
           <div
-            className="absolute left-0 right-0 top-16 z-50 shadow-md border-b border-gray-200"
+            className="absolute left-0 right-0 top-full z-40 bg-white shadow-md border-b border-gray-200"
             onMouseEnter={() => {
               if (closeTimer.current) window.clearTimeout(closeTimer.current);
             }}

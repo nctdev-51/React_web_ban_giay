@@ -11,13 +11,10 @@ export type MegaMenuData = {
 
 export function MegaMenu({ data }: { data: MegaMenuData }) {
   return (
-    // Thêm padding cho giống không gian thoáng của Nike
     <div className="border-t bg-white pb-12 pt-8">
-      {/* Đổi sang flex và justify-center để căn giữa các cột */}
       <div className="mx-auto max-w-[1200px] flex justify-center gap-12 lg:gap-20">
         {data.columns.map((col) => (
           <div key={col.title} className="w-[160px]">
-            {/* Tiêu đề cột màu đen */}
             <div className="text-base font-medium text-black mb-4">
               {col.title}
             </div>

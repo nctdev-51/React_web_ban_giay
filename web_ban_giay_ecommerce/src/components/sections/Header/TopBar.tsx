@@ -8,8 +8,8 @@ export type TopBarProps = {
 const defaultLinks: TopLink[] = [
   { label: "Find a Store", href: "#" },
   { label: "Help", href: "#" },
-  { label: "Join Us", href: "#" },
-  { label: "Sign In", href: "#" },
+  { label: "Join Us", href: "/login" },
+  { label: "Sign In", href: "/login" },
 ];
 
 export function TopBar({ links = defaultLinks, className = "" }: TopBarProps) {

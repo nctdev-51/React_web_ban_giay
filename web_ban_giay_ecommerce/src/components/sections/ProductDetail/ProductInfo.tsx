@@ -8,32 +8,36 @@ function formatPrice(price: number) {
 }
 
 export function ProductInfo({ product }: { product: Product }) {
+  // Tính tổng stock để xem còn hàng hay hết
   const totalStock = product.sizes.reduce((sum, item) => sum + item.stock, 0);
 
   return (
-    <div className="space-y-3">
-      <p className="text-xs uppercase tracking-wide text-slate-500">
-        {product.productType} · {product.collection}
-      </p>
-
-      <h1 className="text-3xl md:text-4xl font-semibold leading-tight text-slate-900">
+    <div className="space-y-2">
+      <h1 className="text-3xl md:text-[32px] font-medium leading-tight text-[#111]">
         {product.title}
       </h1>
 
-      <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
-        <span>{product.sport}</span>
-        <span>•</span>
-        <span>{product.gender.join(" / ")}</span>
-        <span>•</span>
-        <span>{totalStock} in stock</span>
-      </div>
+      <p className="text-base text-gray-600 font-medium">
+        {product.sport} {product.productType}
+      </p>
 
-      <p className="text-2xl font-semibold text-slate-900">{formatPrice(product.price)}</p>
+      <p className="text-[22px] font-medium text-[#111] pt-4 pb-2">
+        {formatPrice(product.price)}
+      </p>
+
+      {totalStock <= 0 ? (
+        <p className="text-red-600 font-medium text-sm">Hết hàng</p>
+      ) : (
+        <p className="text-green-600 font-medium text-sm">Còn hàng</p>
+      )}
 
       {product.tags.length > 0 && (
-        <div className="flex flex-wrap gap-2 pt-1">
+        <div className="flex flex-wrap gap-2 pt-4">
           {product.tags.map((tag) => (
-            <span key={tag} className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-700">
+            <span
+              key={tag}
+              className="inline-flex items-center rounded-sm bg-gray-100 px-3 py-1 text-xs font-medium text-gray-800 uppercase tracking-wide"
+            >
               {tag}
             </span>
           ))}
