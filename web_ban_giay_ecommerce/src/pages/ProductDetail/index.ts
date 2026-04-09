@@ -6,3 +6,4 @@ export { AddToCartActions } from "./AddToCartActions";
 export { ProductDescription } from "./ProductDescription";
 export { ProductSpecs } from "./ProductSpecs";
 export { RelatedProducts } from "./RelatedProducts";
+export { ProductDetailUiProvider, useProductDetailUi } from "./ProductDetailUiContext";
