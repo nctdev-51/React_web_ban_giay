@@ -1,7 +1,41 @@
 import { apiGet } from "./api";
 import type { Product, ProductSummary, ProductsListResponse } from "../types/product";
 
-const PRODUCTS_URL = "https://dummyjson.com/c/124a-92c7-4986-bfe9";
+type RawProduct = Partial<Product> & {
+  id: number;
+  name?: string;
+  image?: string;
+  category?: string;
+  type?: string;
+  collections?: string;
+  genders?: string[];
+};
+
+const viteEnv = (import.meta as unknown as { env?: Record<string, string | undefined> }).env || {};
+const API_MODE = (viteEnv.VITE_PRODUCTS_API_MODE || "dummyjson").toLowerCase();
+const API_BASE_URL = viteEnv.VITE_API_BASE_URL || "http://localhost:3000";
+const PRODUCTS_URL =
+  viteEnv.VITE_PRODUCTS_URL ||
+  (API_MODE === "json-server"
+    ? `${API_BASE_URL}/products`
+    : "https://dummyjson.com/c/124a-92c7-4986-bfe9");
+
+function normalizeProduct(raw: RawProduct): Product {
+  return {
+    id: raw.id,
+    title: raw.title || raw.name || "Untitled Product",
+    description: raw.description || "",
+    price: raw.price || 0,
+    thumbnail: raw.thumbnail || raw.image || "",
+    images: raw.images || [],
+    gender: raw.gender || raw.genders || [],
+    productType: raw.productType || raw.type || "",
+    sport: raw.sport || raw.category || "",
+    collection: raw.collection || raw.collections || "",
+    tags: raw.tags || [],
+    sizes: raw.sizes || [],
+  };
+}
 
 function toSummary(product: Product): ProductSummary {
   return {
@@ -19,7 +53,10 @@ let cachePromise: Promise<Product[]> | null = null;
 
 async function fetchAllProducts(): Promise<Product[]> {
   if (!cachePromise) {
-    cachePromise = apiGet<ProductsListResponse>(PRODUCTS_URL).then((res) => res.products);
+    cachePromise = apiGet<ProductsListResponse | RawProduct[]>(PRODUCTS_URL).then((res) => {
+      const products = Array.isArray(res) ? res : res.products;
+      return products.map((item) => normalizeProduct(item as RawProduct));
+    });
   }
 
   return cachePromise;
