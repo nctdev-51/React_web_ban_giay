@@ -6,7 +6,12 @@ type SizeSelectorProps = {
   onSelectSize: (size: number) => void;
 };
 
-export function SizeSelector({ sizes, selectedSize, onSelectSize }: SizeSelectorProps) {
+// BẢO VỆ: Thêm gán mặc định sizes = []
+export function SizeSelector({
+  sizes = [],
+  selectedSize,
+  onSelectSize,
+}: SizeSelectorProps) {
   const sortedSizes = [...sizes].sort((a, b) => a.size - b.size);
 
   return (

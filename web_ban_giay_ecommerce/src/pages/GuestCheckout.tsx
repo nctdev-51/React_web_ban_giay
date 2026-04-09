@@ -65,16 +65,35 @@ export default function GuestCheckout() {
   };
 
   // Hàm mô phỏng đẩy dữ liệu lên Database
+  // Hàm đẩy dữ liệu lên Database Backend thật
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // TODO: Sau này thay bằng Axios.post('/api/orders', { user: formData, items: cartItems })
-    await new Promise((resolve) => setTimeout(resolve, 1500)); // Giả lập mạng chậm 1.5s
+    const newOrder = {
+      customerInfo: formData,
+      items: cartItems,
+      totalAmount: total,
+    };
 
-    setIsSubmitting(false);
-    setOrderSuccess(true);
-    dispatch(clearCart());
+    try {
+      const response = await fetch("http://localhost:5000/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newOrder),
+      });
+
+      if (!response.ok) {
+        throw new Error("Lỗi khi tạo đơn hàng");
+      }
+
+      setOrderSuccess(true);
+      dispatch(clearCart());
+    } catch (error) {
+      alert("Lỗi kết nối đến máy chủ. Vui lòng thử lại sau!");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Màn hình thành công

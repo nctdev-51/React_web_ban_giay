@@ -1,7 +1,8 @@
 import { useMemo, useRef, useState } from "react";
 import { MegaMenu, type MegaMenuData } from "./MegaBar";
 import { Link } from "react-router-dom";
-import { useSelector } from "react-redux"; // <-- 1. Import Redux
+import { useSelector } from "react-redux";
+import { Logo } from "../../ui/Logo";
 
 type NavItem = { label: string; href: string; menuKey?: string };
 
@@ -17,13 +18,13 @@ export function MainNav() {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const closeTimer = useRef<number | null>(null);
 
-  // Lấy dữ liệu Giỏ hàng từ Redux
   const cartItems = useSelector((state: any) => state.cart?.items || []);
   const totalQuantity = cartItems.reduce(
     (acc: any, item: any) => acc + item.quantity,
     0,
   );
 
+  // ĐÃ FIX: Thay thế toàn bộ "#" bằng link Category thật
   const menus = useMemo<Record<string, MegaMenuData>>(
     () => ({
       new: {
@@ -31,18 +32,16 @@ export function MainNav() {
           {
             title: "Featured",
             links: [
-              { label: "Upcoming Drops", href: "#" },
-              { label: "New Arrivals", href: "#" },
-              { label: "Bestsellers", href: "#" },
-              { label: "SNKRS Launch Calendar", href: "#" },
+              { label: "New Arrivals", href: "/category/new" },
+              { label: "Bestsellers", href: "/category/bestseller" },
+              { label: "Member Access", href: "/category/member-access" },
             ],
           },
           {
             title: "Trending",
             links: [
-              { label: "Just Do the Work", href: "#" },
-              { label: "What's Trending", href: "#" },
-              { label: "Colours of the Season", href: "#" },
+              { label: "Just In", href: "/category/just-in" },
+              { label: "Sustainable Materials", href: "/category/sustainable" },
             ],
           },
         ],
@@ -52,17 +51,18 @@ export function MainNav() {
           {
             title: "Shoes",
             links: [
-              { label: "Lifestyle", href: "#" },
-              { label: "Running", href: "#" },
-              { label: "Training", href: "#" },
+              { label: "Lifestyle", href: "/category/lifestyle" },
+              { label: "Running", href: "/category/running" },
+              { label: "Basketball", href: "/category/basketball" },
+              { label: "Training & Gym", href: "/category/training" },
             ],
           },
           {
             title: "Clothing",
             links: [
-              { label: "Tops & T-Shirts", href: "#" },
-              { label: "Hoodies", href: "#" },
-              { label: "Jackets", href: "#" },
+              { label: "Tops & T-Shirts", href: "/category/tops" },
+              { label: "Hoodies", href: "/category/hoodies" },
+              { label: "Jackets", href: "/category/jackets" },
             ],
           },
         ],
@@ -72,32 +72,26 @@ export function MainNav() {
           {
             title: "Shoes",
             links: [
-              { label: "Lifestyle", href: "#" },
-              { label: "Running", href: "#" },
-              { label: "Training", href: "#" },
+              { label: "Lifestyle", href: "/category/lifestyle" },
+              { label: "Running", href: "/category/running" },
+              { label: "Training & Gym", href: "/category/training" },
             ],
           },
           {
             title: "Clothing",
             links: [
-              { label: "Sports Bras", href: "#" },
-              { label: "Leggings", href: "#" },
-              { label: "Jackets", href: "#" },
+              { label: "Sports Bras", href: "/category/sports-bras" },
+              { label: "Leggings", href: "/category/leggings" },
+              { label: "Jackets", href: "/category/jackets" },
             ],
           },
           {
             title: "Icons",
             links: [
-              { label: "Air Force 1", href: "#" },
-              { label: "Dunk", href: "#" },
-              { label: "Air Max", href: "#" },
-            ],
-          },
-          {
-            title: "Featured",
-            links: [
-              { label: "New Arrivals", href: "#" },
-              { label: "Bestsellers", href: "#" },
+              { label: "Air Force 1", href: "/category/air-force-1" },
+              { label: "Dunk", href: "/category/dunk" },
+              { label: "Air Max", href: "/category/air-max" },
+              { label: "Pegasus", href: "/category/pegasus" },
             ],
           },
         ],
@@ -107,32 +101,17 @@ export function MainNav() {
           {
             title: "Kids' Shoes",
             links: [
-              { label: "Older Kids (7–15)", href: "#" },
-              { label: "Younger Kids (4–7)", href: "#" },
-              { label: "Baby & Toddler (0–4)", href: "#" },
-            ],
-          },
-          {
-            title: "Kids' Clothing",
-            links: [
-              { label: "Tops & T-Shirts", href: "#" },
-              { label: "Hoodies", href: "#" },
-              { label: "Tracksuits", href: "#" },
+              { label: "Older Kids (7–15)", href: "/category/older-kids" },
+              { label: "Younger Kids (4–7)", href: "/category/younger-kids" },
+              { label: "Baby & Toddler (0–4)", href: "/category/baby" },
             ],
           },
           {
             title: "By Sport",
             links: [
-              { label: "Running", href: "#" },
-              { label: "Football", href: "#" },
-              { label: "Basketball", href: "#" },
-            ],
-          },
-          {
-            title: "Featured",
-            links: [
-              { label: "New Releases", href: "#" },
-              { label: "Sale", href: "#" },
+              { label: "Running", href: "/category/running" },
+              { label: "Football", href: "/category/football" },
+              { label: "Basketball", href: "/category/basketball" },
             ],
           },
         ],
@@ -160,12 +139,13 @@ export function MainNav() {
         if (closeTimer.current) window.clearTimeout(closeTimer.current);
       }}
     >
-      {/* KHU VỰC ĐÃ FIX: Bao bọc thanh nav chính bằng relative z-50 và bg-white để nó luôn nổi trên cùng */}
       <div className="relative z-50 bg-white mx-auto max-w-6xl px-4 h-16 flex items-center justify-between gap-4">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2">
-          <div className="h-7 w-7 rounded bg-black" aria-hidden />
-          <span className="sr-only">Home</span>
+        <Link
+          to="/"
+          className="flex items-center hover:opacity-80 transition-opacity"
+        >
+          <Logo className="h-8" showText={true} />
         </Link>
 
         {/* Center nav */}
@@ -222,10 +202,8 @@ export function MainNav() {
       {/* Dropdown panel */}
       {hasMenu && (
         <>
-          {/* KHU VỰC ĐÃ FIX: Lớp phủ mờ hạ z-index xuống 30 và đặt top-[100px] để bắt đầu ngay dưới thanh Nav */}
           <div className="fixed inset-0 top-[100px] bg-black/20 z-30 transition-opacity" />
 
-          {/* KHU VỰC ĐÃ FIX: MegaMenu hạ z-index xuống 40 và dùng top-full để bám sát dưới chân thẻ relative */}
           <div
             className="absolute left-0 right-0 top-full z-40 bg-white shadow-md border-b border-gray-200"
             onMouseEnter={() => {
@@ -233,7 +211,8 @@ export function MainNav() {
             }}
             onMouseLeave={scheduleClose}
           >
-            <MegaMenu data={menus[activeMenu!]} />
+            {/* THÊM KEY ĐỂ COMPONENT RE-RENDER MƯỢT HƠN */}
+            <MegaMenu key={activeMenu} data={menus[activeMenu!]} />
           </div>
         </>
       )}

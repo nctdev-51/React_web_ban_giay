@@ -8,8 +8,9 @@ function formatPrice(price: number) {
 }
 
 export function ProductInfo({ product }: { product: Product }) {
-  // Tính tổng stock để xem còn hàng hay hết
-  const totalStock = product.sizes.reduce((sum, item) => sum + item.stock, 0);
+  // BẢO VỆ: Thêm dấu ? và || 0
+  const totalStock =
+    product.sizes?.reduce((sum, item) => sum + item.stock, 0) || 0;
 
   return (
     <div className="space-y-2">
@@ -31,7 +32,8 @@ export function ProductInfo({ product }: { product: Product }) {
         <p className="text-green-600 font-medium text-sm">Còn hàng</p>
       )}
 
-      {product.tags.length > 0 && (
+      {/* BẢO VỆ: Kiểm tra product.tags có tồn tại không */}
+      {product.tags && product.tags.length > 0 && (
         <div className="flex flex-wrap gap-2 pt-4">
           {product.tags.map((tag) => (
             <span

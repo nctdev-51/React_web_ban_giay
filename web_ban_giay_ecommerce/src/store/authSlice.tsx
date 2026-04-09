@@ -3,53 +3,78 @@ import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 interface AuthState {
   user: any | null;
   isSubmitting: boolean;
-  signupSuccess: boolean; // Trạng thái dùng để chuyển hướng sau khi đăng ký
+  signupSuccess: boolean;
   authMessage: { type: "error" | "success"; text: string } | null;
 }
 
+// Lấy user từ localStorage nếu người dùng F5 tải lại trang
+const savedUser = localStorage.getItem("currentUser");
+
 const initialState: AuthState = {
-  user: null,
+  user: savedUser ? JSON.parse(savedUser) : null,
   isSubmitting: false,
   signupSuccess: false,
   authMessage: null,
 };
 
-// --- ASYNC THUNKS ---
+// --- ASYNC THUNKS (GỌI API BACKEND THẬT) ---
 
-// Đăng ký người dùng
+// 1. Đăng ký người dùng
 export const signUpUser = createAsyncThunk(
   "auth/signUpUser",
   async (formData: any, { rejectWithValue }) => {
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    const existingUsers = JSON.parse(localStorage.getItem("nike_users") || "[]");
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
 
-    if (existingUsers.some((u: any) => u.email === formData.email)) {
-      return rejectWithValue("Email is already registered.");
+      const data = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(data.message || "Lỗi khi đăng ký.");
+      }
+
+      return "Account created successfully!";
+    } catch (error) {
+      return rejectWithValue("Không thể kết nối đến máy chủ.");
     }
-
-    existingUsers.push(formData);
-    localStorage.setItem("nike_users", JSON.stringify(existingUsers));
-    return "Account created successfully!";
-  }
+  },
 );
 
-// Đăng nhập người dùng
+// 2. Đăng nhập người dùng
 export const signInUser = createAsyncThunk(
   "auth/signInUser",
   async (formData: any, { rejectWithValue }) => {
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    const existingUsers = JSON.parse(localStorage.getItem("nike_users") || "[]");
-    
-    const user = existingUsers.find(
-      (u: any) => u.email === formData.email && u.password === formData.password
-    );
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
 
-    if (user) {
-      return user;
-    } else {
-      return rejectWithValue("Invalid email or password. Please try again.");
+      const data = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(data.message || "Invalid email or password.");
+      }
+
+      // Lưu thông tin đăng nhập vào trình duyệt để không bị mất khi F5
+      if (formData.rememberMe) {
+        localStorage.setItem("currentUser", JSON.stringify(data.user));
+      } else {
+        sessionStorage.setItem("currentUser", JSON.stringify(data.user));
+      }
+
+      return data.user;
+    } catch (error) {
+      return rejectWithValue("Không thể kết nối đến máy chủ.");
     }
-  }
+  },
 );
 
 // --- SLICE ---
@@ -69,6 +94,8 @@ const authSlice = createSlice({
       state.user = null;
       state.authMessage = null;
       state.signupSuccess = false;
+      localStorage.removeItem("currentUser");
+      sessionStorage.removeItem("currentUser");
     },
   },
   extraReducers: (builder) => {
@@ -119,5 +146,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearAuthMessage, logout, resetSignupStatus } = authSlice.actions;
+export const { clearAuthMessage, logout, resetSignupStatus } =
+  authSlice.actions;
 export default authSlice.reducer;

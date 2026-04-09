@@ -12,7 +12,8 @@ function SpecsRow({ label, value }: { label: string; value?: string }) {
 }
 
 export function ProductSpecs({ product }: { product: Product }) {
-  const availableSizes = product.sizes
+  // BẢO VỆ: Thêm (product.sizes || []) để luôn đảm bảo nó là mảng
+  const availableSizes = (product.sizes || [])
     .filter((item) => item.stock > 0)
     .map((item) => item.size)
     .sort((a, b) => a - b)
@@ -26,7 +27,7 @@ export function ProductSpecs({ product }: { product: Product }) {
         <SpecsRow label="Product Type" value={product.productType} />
         <SpecsRow label="Sport" value={product.sport} />
         <SpecsRow label="Collection" value={product.collection} />
-        <SpecsRow label="Gender" value={product.gender.join(", ")} />
+        <SpecsRow label="Gender" value={product.gender?.join(", ")} />
         <SpecsRow label="Available Sizes" value={availableSizes} />
       </dl>
     </section>

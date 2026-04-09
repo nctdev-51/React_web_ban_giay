@@ -1,7 +1,7 @@
 import { apiGet } from "./api";
-import type { Product, ProductSummary, ProductsListResponse } from "../types/product";
+import type { Product, ProductSummary } from "../types/product";
 
-const PRODUCTS_URL = "https://dummyjson.com/c/124a-92c7-4986-bfe9";
+const PRODUCTS_URL = "http://localhost:5000/api/products";
 
 function toSummary(product: Product): ProductSummary {
   return {
@@ -19,13 +19,15 @@ let cachePromise: Promise<Product[]> | null = null;
 
 async function fetchAllProducts(): Promise<Product[]> {
   if (!cachePromise) {
-    cachePromise = apiGet<ProductsListResponse>(PRODUCTS_URL).then((res) => res.products);
+    // ĐÃ FIX: Backend trả về trực tiếp mảng Product[], không còn bọc trong res.products nữa
+    cachePromise = apiGet<Product[]>(PRODUCTS_URL);
   }
 
   return cachePromise;
 }
 
 function normalizeSlug(value: string) {
+  if (!value) return "";
   return value
     .toLowerCase()
     .trim()
@@ -37,19 +39,30 @@ function normalizeSlug(value: string) {
 
 function matchesCategory(product: Product, categorySlug: string) {
   const slug = normalizeSlug(categorySlug);
-  const fields = [product.sport, product.productType, product.collection, ...product.gender].map(normalizeSlug);
+
+  // Đảm bảo không bị lỗi nếu product thiếu một số trường (undefined)
+  const fields = [
+    product.sport || "",
+    product.productType || "",
+    product.collection || "",
+    ...(product.gender || []),
+  ].map(normalizeSlug);
 
   return fields.some((field) => field.includes(slug));
 }
 
-export async function getProductsByCategory(categorySlug?: string): Promise<ProductSummary[]> {
+export async function getProductsByCategory(
+  categorySlug?: string,
+): Promise<ProductSummary[]> {
   const products = await fetchAllProducts();
 
-  if (!categorySlug) {
+  if (!categorySlug || categorySlug === "new") {
     return products.map(toSummary);
   }
 
-  return products.filter((p) => matchesCategory(p, categorySlug)).map(toSummary);
+  return products
+    .filter((p) => matchesCategory(p, categorySlug))
+    .map(toSummary);
 }
 
 export async function getProductById(productId: number): Promise<Product> {
@@ -63,7 +76,10 @@ export async function getProductById(productId: number): Promise<Product> {
   return found;
 }
 
-export async function getRelatedProducts(current: Product, limit = 4): Promise<ProductSummary[]> {
+export async function getRelatedProducts(
+  current: Product,
+  limit = 4,
+): Promise<ProductSummary[]> {
   const products = await fetchAllProducts();
 
   return products
