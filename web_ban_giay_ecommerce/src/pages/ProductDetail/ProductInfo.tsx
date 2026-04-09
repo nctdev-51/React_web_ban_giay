@@ -1,4 +1,4 @@
-import type { Product } from "../../../types/product";
+import type { Product } from "../../types/product";
 
 function formatPrice(price: number) {
   return new Intl.NumberFormat("vi-VN", {

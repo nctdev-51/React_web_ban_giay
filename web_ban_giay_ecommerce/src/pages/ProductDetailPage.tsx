@@ -1,18 +1,26 @@
+<<<<<<< Updated upstream
 import { useEffect, useMemo, useState } from "react";
+=======
+import { useCallback, useEffect, useMemo } from "react";
+import { addToCart } from "../store/cartSlice";
+>>>>>>> Stashed changes
 import { useParams } from "react-router-dom";
-import type { Product, ProductSummary } from "../types/product";
-import { getProductById, getRelatedProducts } from "../lib/productsApi";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { fetchProductDetail } from "../store/productDetailSlice";
 import {
   AddToCartActions,
   Breadcrumbs,
+  ProductDetailUiProvider,
   ProductDescription,
   ProductGallery,
   ProductInfo,
   ProductSpecs,
   RelatedProducts,
   SizeSelector,
-} from "../components/sections/ProductDetail";
+  useProductDetailUi,
+} from "./ProductDetail";
 
+<<<<<<< Updated upstream
 export function ProductDetailPage() {
   const { productId } = useParams<{ productId: string }>();
 
@@ -23,16 +31,42 @@ export function ProductDetailPage() {
 
   const [selectedSize, setSelectedSize] = useState<number | null>(null);
   const [quantity, setQuantity] = useState(1);
+=======
+export default function ProductDetailPage() {
+  return (
+    <ProductDetailUiProvider>
+      <ProductDetailContent />
+    </ProductDetailUiProvider>
+  );
+}
+
+function ProductDetailContent() {
+  const { productId } = useParams<{ productId: string }>();
+  const dispatch = useAppDispatch();
+  const { product, relatedProducts, isLoading, error } = useAppSelector(
+    (state) => state.productDetail,
+  );
+  const {
+    selectedSize,
+    quantity,
+    sizeError,
+    showToast,
+    setSelectedSize,
+    setQuantity,
+    markSizeRequired,
+    showAddedToast,
+    resetUiState,
+  } = useProductDetailUi();
+>>>>>>> Stashed changes
 
   useEffect(() => {
     const id = Number(productId);
 
     if (!id || Number.isNaN(id)) {
-      setError("Product ID is invalid.");
-      setIsLoading(false);
       return;
     }
 
+<<<<<<< Updated upstream
     let mounted = true;
 
     async function fetchData() {
@@ -65,6 +99,11 @@ export function ProductDetailPage() {
       mounted = false;
     };
   }, [productId]);
+=======
+    resetUiState();
+    dispatch(fetchProductDetail(id));
+  }, [dispatch, productId, resetUiState]);
+>>>>>>> Stashed changes
 
   const breadcrumbs = useMemo(() => {
     if (!product) {
@@ -81,6 +120,7 @@ export function ProductDetailPage() {
     ];
   }, [product]);
 
+<<<<<<< Updated upstream
   const handleAddToCart = () => {
     if (!product || !selectedSize) return;
 
@@ -91,6 +131,26 @@ export function ProductDetailPage() {
       quantity,
     });
   };
+=======
+  const handleAddToCart = useCallback(() => {
+    if (!selectedSize) {
+      markSizeRequired();
+      window.scrollTo({ top: 300, behavior: "smooth" });
+      return;
+    }
+
+    if (product) {
+      dispatch(
+        addToCart({
+          ...product,
+          selectedSize,
+          quantity,
+        }),
+      );
+      showAddedToast();
+    }
+  }, [dispatch, markSizeRequired, product, quantity, selectedSize, showAddedToast]);
+>>>>>>> Stashed changes
 
   if (isLoading) {
     return <div className="max-w-6xl mx-auto px-6 py-10">Loading product details...</div>;
@@ -98,8 +158,19 @@ export function ProductDetailPage() {
 
   if (error || !product) {
     return (
+<<<<<<< Updated upstream
       <div className="max-w-6xl mx-auto px-6 py-10">
         <p className="text-red-600">{error || "Product not found."}</p>
+=======
+      <div className="min-h-[70vh] flex items-center justify-center text-lg text-gray-500">
+        Đang tải thông tin...
+      </div>
+    );
+  if (error || !product)
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center text-red-500">
+        {error || "Product ID is invalid."}
+>>>>>>> Stashed changes
       </div>
     );
   }
