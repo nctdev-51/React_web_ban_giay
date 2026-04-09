@@ -1,4 +1,4 @@
-import type { Product } from "../../../types/product";
+import type { Product } from "../../types/product";
 
 function SpecsRow({ label, value }: { label: string; value?: string }) {
   if (!value) return null;

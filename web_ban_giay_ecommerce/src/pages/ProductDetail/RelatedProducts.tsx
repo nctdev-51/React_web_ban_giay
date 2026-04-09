@@ -1,5 +1,5 @@
-import type { ProductSummary } from "../../../types/product";
-import { ProductCard } from "../../ui/ProductCard";
+import type { ProductSummary } from "../../types/product";
+import { ProductCard } from "../../components/ui/ProductCard";
 
 export function RelatedProducts({ products }: { products: ProductSummary[] }) {
   if (products.length === 0) return null;

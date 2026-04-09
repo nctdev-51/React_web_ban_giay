@@ -1,4 +1,4 @@
-import type { ProductSize } from "../../../types/product";
+import type { ProductSize } from "../../types/product";
 
 type SizeSelectorProps = {
   sizes: ProductSize[];

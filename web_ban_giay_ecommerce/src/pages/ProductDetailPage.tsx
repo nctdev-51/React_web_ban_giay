@@ -1,82 +1,56 @@
-import { useEffect, useMemo, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useCallback, useEffect, useMemo } from "react";
 import { addToCart } from "../store/cartSlice";
 import { useParams } from "react-router-dom";
-import type { Product, ProductSummary } from "../types/product";
-import { getProductById, getRelatedProducts } from "../lib/productsApi";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { fetchProductDetail } from "../store/productDetailSlice";
 import {
   AddToCartActions,
   Breadcrumbs,
+  ProductDetailUiProvider,
   ProductDescription,
   ProductGallery,
   ProductInfo,
   ProductSpecs,
   RelatedProducts,
   SizeSelector,
-} from "../components/sections/ProductDetail";
+  useProductDetailUi,
+} from "./ProductDetail";
 
 export default function ProductDetailPage() {
+  return (
+    <ProductDetailUiProvider>
+      <ProductDetailContent />
+    </ProductDetailUiProvider>
+  );
+}
+
+function ProductDetailContent() {
   const { productId } = useParams<{ productId: string }>();
-  const dispatch = useDispatch();
-
-  const [product, setProduct] = useState<Product | null>(null);
-  const [relatedProducts, setRelatedProducts] = useState<ProductSummary[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const [selectedSize, setSelectedSize] = useState<number | null>(null);
-  const [quantity, setQuantity] = useState(1);
-
-  // State mới quản lý lỗi UX và Thông báo
-  const [sizeError, setSizeError] = useState(false);
-  const [showToast, setShowToast] = useState(false);
+  const dispatch = useAppDispatch();
+  const { product, relatedProducts, isLoading, error } = useAppSelector(
+    (state) => state.productDetail,
+  );
+  const {
+    selectedSize,
+    quantity,
+    sizeError,
+    showToast,
+    setSelectedSize,
+    setQuantity,
+    markSizeRequired,
+    showAddedToast,
+    resetUiState,
+  } = useProductDetailUi();
 
   useEffect(() => {
     const id = Number(productId);
     if (!id || Number.isNaN(id)) {
-      setError("Product ID is invalid.");
-      setIsLoading(false);
       return;
     }
 
-    let mounted = true;
-
-    async function fetchData() {
-      setIsLoading(true);
-      setError(null);
-      setSelectedSize(null);
-      setQuantity(1);
-      setSizeError(false);
-      setShowToast(false);
-
-      try {
-        const item = await getProductById(id);
-        if (!mounted) return;
-        setProduct(item);
-
-        const related = await getRelatedProducts(item, 4);
-        if (!mounted) return;
-        setRelatedProducts(related);
-      } catch (err) {
-        if (!mounted) return;
-        setError(
-          err instanceof Error ? err.message : "Cannot load product details.",
-        );
-      } finally {
-        if (mounted) setIsLoading(false);
-      }
-    }
-
-    fetchData();
-    return () => {
-      mounted = false;
-    };
-  }, [productId]);
-
-  // Xóa cảnh báo lỗi nếu người dùng đã chọn size
-  useEffect(() => {
-    if (selectedSize) setSizeError(false);
-  }, [selectedSize]);
+    resetUiState();
+    dispatch(fetchProductDetail(id));
+  }, [dispatch, productId, resetUiState]);
 
   const breadcrumbs = useMemo(() => {
     if (!product) return [{ label: "Home", to: "/" }, { label: "Product" }];
@@ -87,11 +61,9 @@ export default function ProductDetailPage() {
     ];
   }, [product]);
 
-  const handleAddToCart = () => {
-    // Validate trước khi đẩy vào giỏ (Rất quan trọng cho DB)
+  const handleAddToCart = useCallback(() => {
     if (!selectedSize) {
-      setSizeError(true);
-      // Cuộn lên phần size nếu màn hình nhỏ
+      markSizeRequired();
       window.scrollTo({ top: 300, behavior: "smooth" });
       return;
     }
@@ -100,16 +72,13 @@ export default function ProductDetailPage() {
       dispatch(
         addToCart({
           ...product,
-          selectedSize: selectedSize,
-          quantity: quantity,
+          selectedSize,
+          quantity,
         }),
       );
-
-      // Hiện thông báo đẹp mắt thay vì alert()
-      setShowToast(true);
-      setTimeout(() => setShowToast(false), 3000); // Tự động ẩn sau 3s
+      showAddedToast();
     }
-  };
+  }, [dispatch, markSizeRequired, product, quantity, selectedSize, showAddedToast]);
 
   if (isLoading)
     return (
@@ -120,7 +89,7 @@ export default function ProductDetailPage() {
   if (error || !product)
     return (
       <div className="min-h-[70vh] flex items-center justify-center text-red-500">
-        {error || "Product not found."}
+        {error || "Product ID is invalid."}
       </div>
     );
 
