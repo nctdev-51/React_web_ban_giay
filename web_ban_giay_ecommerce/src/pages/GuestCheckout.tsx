@@ -5,7 +5,6 @@ import { clearCart, type CartItem } from "../store/cartSlice";
 
 /**
  * Kiểu dữ liệu của form checkout
- * Ghi rõ type để dễ kiểm soát dữ liệu nhập vào
  */
 interface CheckoutForm {
   email: string;
@@ -22,10 +21,6 @@ interface CheckoutForm {
   paymentMethod: "card" | "paypal" | "applepay";
 }
 
-/**
- * Hàm format tiền tệ VNĐ
- * Đặt ngoài component để không bị tạo lại sau mỗi lần render
- */
 const formatPrice = (price: number) => {
   return new Intl.NumberFormat("vi-VN", {
     style: "currency",
@@ -37,17 +32,10 @@ export default function GuestCheckout() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  /**
-   * Lấy cart từ Redux store
-   * Ép kiểu về CartItem[] để tránh dùng any
-   */
   const cartItems = useSelector(
     (state: any) => (state.cart.items || []) as CartItem[],
   );
 
-  /**
-   * State quản lý dữ liệu form checkout
-   */
   const [formData, setFormData] = useState<CheckoutForm>({
     email: "",
     firstName: "",
@@ -66,11 +54,6 @@ export default function GuestCheckout() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
 
-  /**
-   * useMemo:
-   * Chỉ tính lại tổng tiền khi cartItems thay đổi
-   * Tránh mỗi lần render là reduce lại mảng sản phẩm
-   */
   const summary = useMemo(() => {
     const subtotal = cartItems.reduce(
       (acc, item) => acc + (item.price || 0) * (item.quantity || 1),
@@ -87,11 +70,6 @@ export default function GuestCheckout() {
     };
   }, [cartItems]);
 
-  /**
-   * useCallback:
-   * Ghi nhớ hàm xử lý input
-   * Có ích khi sau này tách form ra component con
-   */
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
 
@@ -101,8 +79,16 @@ export default function GuestCheckout() {
     }));
   }, []);
 
-  // Hàm mô phỏng đẩy dữ liệu lên Database
-  // Hàm đẩy dữ liệu lên Database Backend thật
+  // ĐÃ FIX 1: Thêm hàm xử lý quay lại giỏ hàng
+  const handleBackToCart = () => {
+    navigate("/cart");
+  };
+
+  // ĐÃ FIX 2: Thêm hàm xử lý tiếp tục mua sắm
+  const handleContinueShopping = () => {
+    navigate("/"); // Trở về trang chủ
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -110,7 +96,8 @@ export default function GuestCheckout() {
     const newOrder = {
       customerInfo: formData,
       items: cartItems,
-      totalAmount: total,
+      // ĐÃ FIX 3: Gọi đúng summary.total
+      totalAmount: summary.total,
     };
 
     try {
@@ -387,7 +374,7 @@ export default function GuestCheckout() {
                     </p>
 
                     <p className="font-medium mt-1">
-                      {formatPrice(product.price * product.quantity)}
+                      {formatPrice(product.price * (product.quantity || 1))}
                     </p>
                   </div>
                 </div>

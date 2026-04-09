@@ -27,4 +27,19 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+// [STAFF] THÊM SẢN PHẨM MỚI
+router.post('/', async (req, res) => {
+    // Gợi ý cho team: req.body sẽ chứa thông tin giày. Dùng Product.create()
+});
+
+// [STAFF] CẬP NHẬT SẢN PHẨM
+router.put('/:id', async (req, res) => {
+    // Gợi ý: Dùng Product.findOneAndUpdate({ id: req.params.id }, req.body)
+});
+
+// [STAFF] XÓA SẢN PHẨM
+router.delete('/:id', async (req, res) => {
+    // Gợi ý: Dùng Product.findOneAndDelete({ id: req.params.id })
+});
+
 module.exports = router;

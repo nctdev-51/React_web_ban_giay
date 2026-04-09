@@ -5,6 +5,7 @@ const userSchema = new mongoose.Schema({
     password: { type: String, required: true }, // Thực tế sẽ mã hóa bcrypt, đồ án thì để text tạm cho dễ test
     firstName: String,
     surname: String,
+    role: { type: String, default: "user" },
     shoppingPreference: String,
     dateOfBirth: {
         day: Number,

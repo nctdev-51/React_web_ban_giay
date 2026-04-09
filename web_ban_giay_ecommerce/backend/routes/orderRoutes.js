@@ -34,4 +34,31 @@ router.get('/', async (req, res) => {
     }
 });
 
+// LẤY LỊCH SỬ ĐƠN HÀNG CỦA USER CỤ THỂ (Cho Task 3)
+router.get('/user/:email', async (req, res) => {
+    try {
+        const userEmail = req.params.email;
+        // Tìm các đơn hàng có email khớp với email truyền vào
+        const orders = await Order.find({ "customerInfo.email": userEmail }).sort({ createdAt: -1 });
+        res.json(orders);
+    } catch (error) {
+        res.status(500).json({ message: "Lỗi khi lấy lịch sử đơn hàng" });
+    }
+});
+
+// [STAFF] CẬP NHẬT TRẠNG THÁI ĐƠN HÀNG (Cho Task 2)
+router.put('/:id/status', async (req, res) => {
+    try {
+        const { status } = req.body; // Ví dụ: "Đang giao", "Hoàn thành"
+        const updatedOrder = await Order.findByIdAndUpdate(
+            req.params.id,
+            { status: status },
+            { new: true }
+        );
+        res.json(updatedOrder);
+    } catch (error) {
+        res.status(500).json({ message: "Lỗi cập nhật trạng thái" });
+    }
+});
+
 module.exports = router;
