@@ -19,9 +19,10 @@ export function CategoryPage() {
 
   // States cho Lọc & Sắp xếp
   const [currentSort, setCurrentSort] = useState<string>("featured");
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedSports, setSelectedSports] = useState<string[]>([]);
   const [selectedGenders, setSelectedGenders] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<number[]>([]);
+  const [price, setPrice] = useState<number>(99999999999);
 
   // 1. Fetch dữ liệu từ API
   useEffect(() => {
@@ -48,9 +49,10 @@ export function CategoryPage() {
 
     // Reset lại bộ lọc khi đổi danh mục (ví dụ từ Men sang Women)
     setCurrentSort("featured");
-    setSelectedCategories([]);
+    setSelectedSports([]);
     setSelectedGenders([]);
     setSelectedSizes([]);
+    setPrice(99999999999);
 
     return () => {
       mounted = false;
@@ -59,8 +61,8 @@ export function CategoryPage() {
 
   // 2. Hàm xử lý khi người dùng tick vào các checkbox trong Sidebar
   const handleFilterChange = (filterType: string, value: string | number) => {
-    if (filterType === "category") {
-      setSelectedCategories((prev) =>
+    if (filterType === "sport") {
+      setSelectedSports((prev) =>
         prev.includes(value as string)
           ? prev.filter((v) => v !== value)
           : [...prev, value as string],
@@ -77,6 +79,8 @@ export function CategoryPage() {
           ? prev.filter((v) => v !== value)
           : [...prev, value as number],
       );
+    } else if (filterType === "price") {
+      setPrice(Number(value));
     }
   };
 
@@ -85,13 +89,45 @@ export function CategoryPage() {
     let result = [...products];
 
     // Lọc theo danh mục (Category)
-    if (selectedCategories.length > 0) {
+    if (selectedSports.length > 0) {
       result = result.filter((p) =>
-        selectedCategories.some(
-          (cat) => p.sport?.includes(cat) || p.collection?.includes(cat),
-        ),
+        selectedSports.some((sport) => p.sport?.includes(sport)),
       );
     }
+
+    // Lọc theo giới tính (Gender)
+    if (selectedGenders.length > 0) {
+      result = result.filter((p) => {
+        // Nếu p.gender không tồn tại hoặc không phải mảng, bỏ qua sản phẩm này
+        if (!Array.isArray(p.gender)) return false;
+
+        // Kiểm tra xem có phần tử nào trong mảng p.gender
+        // Khớp với mảng selectedGenders hay không
+        return p.gender.some((productGender) =>
+          selectedGenders.some(
+            (selected) =>
+              selected.toLowerCase() === productGender.toLowerCase(),
+          ),
+        );
+      });
+    }
+
+    // Lọc theo Size
+    if (selectedSizes.length > 0) {
+      result = result.filter((p) => {
+        // Kiểm tra nếu p.sizes tồn tại và là mảng
+        if (!Array.isArray(p.sizes)) return false;
+
+        // Kiểm tra: Chỉ cần 1 size trong sản phẩm nằm trong danh sách chọn
+        // VÀ size đó phải còn hàng (stock > 0)
+        return p.sizes.some(
+          (s) => selectedSizes.includes(s.size) && s.stock > 0,
+        );
+      });
+    }
+
+    // Lọc theo giá
+    result = result.filter((p) => p.price < price);
 
     // Sắp xếp (Sort)
     if (currentSort === "low-high") {
@@ -103,13 +139,15 @@ export function CategoryPage() {
       result.sort((a, b) => b.id - a.id);
     }
 
+    console.log(result);
     return result;
   }, [
     products,
     currentSort,
-    selectedCategories,
+    selectedSports,
     selectedGenders,
     selectedSizes,
+    price,
   ]);
 
   const formatTitle = (slug?: string) => {
@@ -144,6 +182,8 @@ export function CategoryPage() {
           <FilterSidebar
             selectedGenders={selectedGenders}
             selectedSizes={selectedSizes}
+            selectedSports={selectedSports}
+            price={price}
             onFilterChange={handleFilterChange}
           />
         </div>
