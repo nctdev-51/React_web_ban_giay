@@ -24,5 +24,13 @@ export type ProductsListResponse = {
 
 export type ProductSummary = Pick<
   Product,
-  "id" | "title" | "price" | "thumbnail" | "sport" | "productType" | "collection"
+  | "id"
+  | "title"
+  | "price"
+  | "thumbnail"
+  | "sport"
+  | "productType"
+  | "collection"
+  | "gender"
+  | "sizes"
 >;

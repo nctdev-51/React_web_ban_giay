@@ -12,6 +12,8 @@ function toSummary(product: Product): ProductSummary {
     sport: product.sport,
     productType: product.productType,
     collection: product.collection,
+    gender: product.gender,
+    sizes: product.sizes,
   };
 }
 

@@ -93,12 +93,6 @@ export function CategoryPage() {
       );
     }
 
-    /* Lưu ý: Mock Data (ProductSummary) hiện tại không có trường 'size' và 'gender'.
-      Trong thực tế, ở dự án thật bạn sẽ gọi API kèm params như: 
-      /products?gender=Men&size=42 
-      Còn hiện tại chúng ta thiết lập sẵn luồng UI để sau này tự ráp Backend.
-    */
-
     // Sắp xếp (Sort)
     if (currentSort === "low-high") {
       result.sort((a, b) => a.price - b.price);
