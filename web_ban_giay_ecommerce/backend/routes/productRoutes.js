@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
+const {
+    searchProducts,
+    suggestProducts,
+} = require('../control/productSearchController');
 
 // API: Lấy toàn bộ danh sách sản phẩm
 router.get('/', async (req, res) => {
@@ -15,6 +19,12 @@ router.get('/', async (req, res) => {
         res.status(500).json({ message: "Lỗi server khi lấy sản phẩm" });
     }
 });
+
+// API: Gợi ý sản phẩm theo tu khoa
+router.get('/suggest', suggestProducts);
+
+// API: Tim kiem san pham theo tu khoa
+router.get('/search', searchProducts);
 
 // API: Lấy chi tiết 1 sản phẩm theo ID
 router.get('/:id', async (req, res) => {

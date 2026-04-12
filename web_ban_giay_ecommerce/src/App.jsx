@@ -9,6 +9,7 @@ import { CategoryPage } from "./pages/CategoryPage/CategoryPage";
 import CartProduct from "./pages/CartProduct";
 import GuestCheckout from "./pages/GuestCheckout";
 import ProductDetailPage from "./pages/ProductDetailPage";
+import SearchResults from "./pages/Search/SearchResults";
 
 import AuthPage from "./pages/Auth/AuthPage";
 import User from "./pages/Auth/User";
@@ -31,6 +32,7 @@ function AppContent() {
           <Route path="/product/:productId" element={<ProductDetailPage />} />
           <Route path="/category" element={<CategoryPage />} />
           <Route path="/category/:categorySlug" element={<CategoryPage />} />
+          <Route path="/search" element={<SearchResults />} />
           <Route path="/cart" element={<CartProduct />} />
           <Route path="/guest-checkout" element={<GuestCheckout />} />
           <Route path="/login" element={<AuthPage />} />
