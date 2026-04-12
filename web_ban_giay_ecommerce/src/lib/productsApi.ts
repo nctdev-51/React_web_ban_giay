@@ -13,15 +13,9 @@ function toSummary(product: Product): ProductSummary {
     thumbnail: product.thumbnail,
     sport: product.sport,
     productType: product.productType,
-<<<<<<< Updated upstream
-    collection: product.collection,
-    gender: product.gender,
-    sizes: product.sizes,
-=======
     collection: product.collection || product.collectionName || "",
     gender: product.gender || [],
     sizes: product.sizes || [],
->>>>>>> Stashed changes
   };
 }
 
