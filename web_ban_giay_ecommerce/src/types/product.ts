@@ -4,6 +4,7 @@ export type ProductSize = {
 };
 
 export type Product = {
+  _id: string; 
   id: number;
   title: string;
   description: string;
@@ -24,6 +25,7 @@ export type ProductsListResponse = {
 
 export type ProductSummary = Pick<
   Product,
+  | "_id"
   | "id"
   | "title"
   | "price"

@@ -13,7 +13,11 @@ const userSchema = new mongoose.Schema({
         year: Number
     },
     isSubscribed: Boolean,
-    createdAt: { type: Date, default: Date.now }
+    createdAt: { type: Date, default: Date.now },
+    favorites: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Product' // Tên này phải trùng với tên model trong Product.js
+    }]
 });
 
 module.exports = mongoose.model('User', userSchema);

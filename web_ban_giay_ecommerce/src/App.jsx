@@ -33,7 +33,8 @@ function AppContent() {
           <Route path="/category/:categorySlug" element={<CategoryPage />} />
           <Route path="/cart" element={<CartProduct />} />
           <Route path="/guest-checkout" element={<GuestCheckout />} />
-          <Route path="/login" element={<AuthPage />} />
+          <Route path="/login" element={<AuthPage isSignup={false}/>} />
+          <Route path="/register" element={<AuthPage isSignup={true}/>} />
           <Route path="/profile" element={<User />} />
 
           {/* Route Admin */}

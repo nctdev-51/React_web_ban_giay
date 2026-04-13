@@ -47,7 +47,7 @@ export function AddToCartActions({
       <button
         type="button"
         onClick={onAddToCart}
-        className={`w-full py-4 rounded-full text-base font-medium transition-all duration-300 ${
+        className={`w-full py-4 rounded-full text-base font-medium transition-all duration-300 cursor-pointer ${
           canAdd
             ? "bg-black text-white hover:bg-gray-800 shadow-lg hover:shadow-xl"
             : "bg-gray-200 text-gray-500 cursor-not-allowed"

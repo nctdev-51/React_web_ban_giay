@@ -5,16 +5,21 @@ interface AuthState {
   isSubmitting: boolean;
   signupSuccess: boolean;
   authMessage: { type: "error" | "success"; text: string } | null;
+  isLogin: boolean;
+  favorites: any[];
 }
 
 // Lấy user từ localStorage nếu người dùng F5 tải lại trang
-const savedUser = localStorage.getItem("currentUser");
+const savedUser = localStorage.getItem("currentUser") || sessionStorage.getItem("currentUser");
+const parsedUser = savedUser ? JSON.parse(savedUser) : null;
 
 const initialState: AuthState = {
   user: savedUser ? JSON.parse(savedUser) : null,
+  favorites: parsedUser?.favorites || [],
   isSubmitting: false,
   signupSuccess: false,
   authMessage: null,
+  isLogin: !!savedUser
 };
 
 // --- ASYNC THUNKS (GỌI API BACKEND THẬT) ---
@@ -77,6 +82,27 @@ export const signInUser = createAsyncThunk(
   },
 );
 
+// Thêm danh sách yêu thích
+export const toggleFavoriteApi = createAsyncThunk(
+  "auth/toggleFavoriteApi",
+  async ({ userId, product }: { userId: string; product: any }, { rejectWithValue }) => {
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/favorite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, productId: product._id }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) return rejectWithValue(data.message);
+
+      // Trả về product để Slice cập nhật vào mảng favorites ở Frontend
+      return product;
+    } catch (error) {
+      return rejectWithValue("Không thể kết nối đến máy chủ.");
+    }
+  }
+);
 // --- SLICE ---
 
 const authSlice = createSlice({
@@ -91,7 +117,9 @@ const authSlice = createSlice({
       state.authMessage = null;
     },
     logout: (state) => {
+      state.isLogin = false;
       state.user = null;
+      state.favorites = [];
       state.authMessage = null;
       state.signupSuccess = false;
       localStorage.removeItem("currentUser");
@@ -108,6 +136,7 @@ const authSlice = createSlice({
       .addCase(signInUser.fulfilled, (state, action) => {
         state.isSubmitting = false;
         state.user = action.payload;
+        state.isLogin = true;
         state.authMessage = {
           type: "success",
           text: `Welcome back, ${action.payload.firstName || "Member"}!`,
@@ -142,6 +171,27 @@ const authSlice = createSlice({
           type: "error",
           text: action.payload as string,
         };
+      })
+      // Xử lý Toggle Favorite
+      .addCase(toggleFavoriteApi.fulfilled, (state, action) => {
+        const product = action.payload;
+        // Kiểm tra xem sản phẩm đã có trong danh sách chưa (dựa trên _id)
+        const index = state.favorites.findIndex((fav) => fav._id === product._id);
+
+        if (index !== -1) {
+          // Nếu có rồi thì xóa đi (Unlike)
+          state.favorites.splice(index, 1);
+        } else {
+          // Nếu chưa có thì thêm vào (Like)
+          state.favorites.push(product);
+        }
+
+        // Cập nhật lại localStorage để khi F5 không bị mất trạng thái trái tim
+        if (state.user) {
+          const updatedUser = { ...state.user, favorites: state.favorites };
+          const storage = localStorage.getItem("currentUser") ? localStorage : sessionStorage;
+          storage.setItem("currentUser", JSON.stringify(updatedUser));
+        }
       });
   },
 });
