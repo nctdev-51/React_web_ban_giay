@@ -1,6 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
+const {
+    searchProducts,
+    suggestProducts,
+} = require('../control/productSearchController');
 
 router.get('/', async (req, res) => {
     try {
@@ -13,6 +17,13 @@ router.get('/', async (req, res) => {
     }
 });
 
+// API: Gợi ý sản phẩm theo tu khoa
+router.get('/suggest', suggestProducts);
+
+// API: Tim kiem san pham theo tu khoa
+router.get('/search', searchProducts);
+
+// API: Lấy chi tiết 1 sản phẩm theo ID
 router.get('/:id', async (req, res) => {
     try {
         const productId = Number(req.params.id);

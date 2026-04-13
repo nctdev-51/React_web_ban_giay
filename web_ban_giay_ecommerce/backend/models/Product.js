@@ -9,6 +9,7 @@ const productSchema = new mongoose.Schema({
     images: [String],
     sport: String,
     productType: String,
+    collection: String,
     collectionName: String,
     gender: [String],
     sizes: [

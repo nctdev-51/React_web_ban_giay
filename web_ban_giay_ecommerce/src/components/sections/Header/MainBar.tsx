@@ -1,8 +1,10 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MegaMenu, type MegaMenuData } from "./MegaBar";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Logo } from "../../ui/Logo";
+import { suggestProducts } from "../../../lib/productsApi";
+import type { ProductSummary } from "../../../types/product";
 
 type NavItem = { label: string; href: string; menuKey?: string };
 
@@ -14,15 +16,61 @@ const NAV: NavItem[] = [
   { label: "Sale", href: "/category/sale" },
 ];
 
+function formatPrice(price: number) {
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(price);
+}
+
 export function MainNav() {
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const closeTimer = useRef<number | null>(null);
+  const suggestTimer = useRef<number | null>(null);
+  const blurTimer = useRef<number | null>(null);
+  const navigate = useNavigate();
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<ProductSummary[]>([]);
+  const [isSuggestOpen, setIsSuggestOpen] = useState(false);
+  const [isSuggestLoading, setIsSuggestLoading] = useState(false);
 
   const cartItems = useSelector((state: any) => state.cart?.items || []);
   const totalQuantity = cartItems.reduce(
     (acc: any, item: any) => acc + item.quantity,
     0,
   );
+
+  useEffect(() => {
+    const keyword = searchQuery.trim();
+
+    if (suggestTimer.current) window.clearTimeout(suggestTimer.current);
+
+    if (keyword.length < 2) {
+      setSuggestions([]);
+      setIsSuggestOpen(false);
+      setIsSuggestLoading(false);
+      return;
+    }
+
+    setIsSuggestLoading(true);
+    suggestTimer.current = window.setTimeout(async () => {
+      try {
+        const data = await suggestProducts(keyword, 6);
+        setSuggestions(data);
+        setIsSuggestOpen(true);
+      } catch (error) {
+        setSuggestions([]);
+        setIsSuggestOpen(false);
+      } finally {
+        setIsSuggestLoading(false);
+      }
+    }, 250);
+
+    return () => {
+      if (suggestTimer.current) window.clearTimeout(suggestTimer.current);
+    };
+  }, [searchQuery]);
 
   // ĐÃ FIX: Thay thế toàn bộ "#" bằng link Category thật
   const menus = useMemo<Record<string, MegaMenuData>>(
@@ -169,13 +217,99 @@ export function MainNav() {
 
         {/* Right */}
         <div className="flex items-center gap-3">
-          <label className="hidden sm:flex items-center gap-2 rounded-full bg-slate-100 px-3 py-2">
-            <span className="text-slate-500 text-sm">🔎</span>
-            <input
-              className="bg-transparent outline-none text-sm w-40 placeholder:text-slate-500"
-              placeholder="Search"
-            />
-          </label>
+          <div className="relative hidden sm:block">
+            <label className="flex items-center gap-2 rounded-full bg-slate-100 px-3 py-2">
+              <span className="text-slate-500 text-sm">🔎</span>
+              <input
+                className="bg-transparent outline-none text-sm w-48 placeholder:text-slate-500"
+                placeholder="Search"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                onFocus={() => {
+                  if (searchQuery.trim().length >= 2) setIsSuggestOpen(true);
+                }}
+                onBlur={() => {
+                  if (blurTimer.current) window.clearTimeout(blurTimer.current);
+                  blurTimer.current = window.setTimeout(
+                    () => setIsSuggestOpen(false),
+                    120,
+                  );
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    const keyword = searchQuery.trim();
+                    if (keyword) {
+                      setIsSuggestOpen(false);
+                      navigate(`/search?q=${encodeURIComponent(keyword)}`);
+                    }
+                  }
+                }}
+              />
+            </label>
+
+            {isSuggestOpen && (
+              <div
+                className="absolute left-0 right-0 mt-2 rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden z-50"
+                onMouseDown={(event) => event.preventDefault()}
+              >
+                {isSuggestLoading ? (
+                  <div className="px-4 py-3 text-sm text-slate-500">
+                    Dang tim kiem...
+                  </div>
+                ) : suggestions.length === 0 ? (
+                  <div className="px-4 py-3 text-sm text-slate-500">
+                    Khong co san pham goi y.
+                  </div>
+                ) : (
+                  <div className="max-h-72 overflow-auto">
+                    {suggestions.map((item) => (
+                      <Link
+                        key={item.id}
+                        to={`/product/${item.id}`}
+                        className="flex items-center gap-3 px-4 py-2 hover:bg-slate-50"
+                        onClick={() => setIsSuggestOpen(false)}
+                      >
+                        <img
+                          src={item.thumbnail}
+                          alt={item.title}
+                          className="h-12 w-12 rounded-md object-cover bg-slate-100"
+                          loading="lazy"
+                        />
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-slate-900 truncate">
+                            {item.title}
+                          </p>
+                          <p className="text-xs text-slate-500 truncate">
+                            {item.sport} {item.productType}
+                          </p>
+                        </div>
+                        <span className="ml-auto text-sm font-medium text-slate-900">
+                          {formatPrice(item.price)}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+
+                {suggestions.length > 0 && (
+                  <button
+                    className="w-full text-left px-4 py-2 text-xs font-medium text-slate-600 border-t border-slate-100 hover:bg-slate-50"
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => {
+                      const keyword = searchQuery.trim();
+                      if (keyword) {
+                        setIsSuggestOpen(false);
+                        navigate(`/search?q=${encodeURIComponent(keyword)}`);
+                      }
+                    }}
+                  >
+                    Xem tat ca ket qua
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
 
           <Link
             to="/favorites"
