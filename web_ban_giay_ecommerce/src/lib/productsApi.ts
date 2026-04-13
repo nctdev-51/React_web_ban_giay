@@ -2,6 +2,8 @@ import { apiGet } from "./api";
 import type { Product, ProductSummary } from "../types/product";
 
 const PRODUCTS_URL = "http://localhost:5000/api/products";
+const SEARCH_URL = "http://localhost:5000/api/products/search";
+const SUGGEST_URL = "http://localhost:5000/api/products/suggest";
 
 function toSummary(product: Product): ProductSummary {
   return {
@@ -11,9 +13,9 @@ function toSummary(product: Product): ProductSummary {
     thumbnail: product.thumbnail,
     sport: product.sport,
     productType: product.productType,
-    collection: product.collection,
-    gender: product.gender,
-    sizes: product.sizes,
+    collection: product.collection || product.collectionName || "",
+    gender: product.gender || [],
+    sizes: product.sizes || [],
   };
 }
 
@@ -98,4 +100,28 @@ export async function getRelatedProducts(
     .sort((a, b) => b.score - a.score)
     .slice(0, limit)
     .map((item) => toSummary(item.product));
+}
+
+export async function searchProducts(
+  keyword: string,
+  limit = 50,
+): Promise<ProductSummary[]> {
+  const trimmed = keyword.trim();
+  if (!trimmed) return [];
+
+  const url = `${SEARCH_URL}?q=${encodeURIComponent(trimmed)}&limit=${limit}`;
+  const products = await apiGet<Product[]>(url);
+  return products.map(toSummary);
+}
+
+export async function suggestProducts(
+  keyword: string,
+  limit = 6,
+): Promise<ProductSummary[]> {
+  const trimmed = keyword.trim();
+  if (!trimmed) return [];
+
+  const url = `${SUGGEST_URL}?q=${encodeURIComponent(trimmed)}&limit=${limit}`;
+  const products = await apiGet<Product[]>(url);
+  return products.map(toSummary);
 }

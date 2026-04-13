@@ -15,6 +15,7 @@ export type Product = {
   productType: string;
   sport: string;
   collection: string;
+  collectionName?: string;
   tags: string[];
   sizes: ProductSize[];
 };
