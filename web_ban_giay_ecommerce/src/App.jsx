@@ -15,6 +15,7 @@ import User from "./pages/Auth/User";
 
 // FIX LỖI IMPORT TỪ ẢNH CỦA BẠN: manager nằm trong components
 import AdminLayout from "./components/manager/AdminLayout"; 
+import FavoritesPage from "./pages/FavoritesPage";
 
 function AppContent() {
   const location = useLocation();
@@ -36,7 +37,7 @@ function AppContent() {
           <Route path="/login" element={<AuthPage isSignup={false}/>} />
           <Route path="/register" element={<AuthPage isSignup={true}/>} />
           <Route path="/profile" element={<User />} />
-
+          <Route path="/favorites" element={<FavoritesPage/>}/>
           {/* Route Admin */}
           <Route path="/admin" element={<AdminLayout />} />
 

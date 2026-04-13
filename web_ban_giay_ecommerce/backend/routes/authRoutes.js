@@ -78,4 +78,19 @@ router.post('/favorite', async (req, res) => {
     }
 });
 
+router.get('/profile/:userId', async (req, res) => {
+    try {
+        // .populate('favorites') để lấy chi tiết thông tin sản phẩm thay vì chỉ lấy ID
+        const user = await User.findById(req.params.userId).populate('favorites');
+        
+        if (!user) {
+            return res.status(404).json({ message: "Không tìm thấy người dùng" });
+        }
+
+        res.json({ user });
+    } catch (error) {
+        res.status(500).json({ message: "Lỗi server" });
+    }
+});
+
 module.exports = router;

@@ -14,7 +14,7 @@ const savedUser = localStorage.getItem("currentUser") || sessionStorage.getItem(
 const parsedUser = savedUser ? JSON.parse(savedUser) : null;
 
 const initialState: AuthState = {
-  user: savedUser ? JSON.parse(savedUser) : null,
+  user: parsedUser,
   favorites: parsedUser?.favorites || [],
   isSubmitting: false,
   signupSuccess: false,
@@ -82,7 +82,7 @@ export const signInUser = createAsyncThunk(
   },
 );
 
-// Thêm danh sách yêu thích
+// 3.Thêm danh sách yêu thích
 export const toggleFavoriteApi = createAsyncThunk(
   "auth/toggleFavoriteApi",
   async ({ userId, product }: { userId: string; product: any }, { rejectWithValue }) => {
@@ -100,6 +100,26 @@ export const toggleFavoriteApi = createAsyncThunk(
       return product;
     } catch (error) {
       return rejectWithValue("Không thể kết nối đến máy chủ.");
+    }
+  }
+);
+
+// 4. Lấy thông tin User mới nhất (bao gồm Favorites từ DB)
+export const fetchUserProfile = createAsyncThunk(
+  "auth/fetchUserProfile",
+  async (userId: string, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/auth/profile/${userId}`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        return rejectWithValue(data.message || "Không thể lấy thông tin người dùng.");
+      }
+
+      // Trả về user object mới nhất
+      return data.user; 
+    } catch (error) {
+      return rejectWithValue("Lỗi kết nối server.");
     }
   }
 );
@@ -129,6 +149,16 @@ const authSlice = createSlice({
   extraReducers: (builder) => {
     builder
       // Xử lý Sign In
+      .addCase(fetchUserProfile.fulfilled, (state, action) => {
+        const updatedUser = action.payload;
+        state.user = updatedUser;
+        // Cập nhật danh sách yêu thích mới nhất từ Server
+        state.favorites = updatedUser.favorites || [];
+
+        // Đồng bộ lại vào Storage để F5 vẫn giữ được dữ liệu mới nhất
+        const storage = localStorage.getItem("currentUser") ? localStorage : sessionStorage;
+        storage.setItem("currentUser", JSON.stringify(updatedUser));
+        })
       .addCase(signInUser.pending, (state) => {
         state.isSubmitting = true;
         state.authMessage = null;
