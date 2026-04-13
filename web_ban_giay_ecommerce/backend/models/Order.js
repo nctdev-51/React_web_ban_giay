@@ -20,8 +20,14 @@ const orderSchema = new mongoose.Schema({
         }
     ],
     totalAmount: Number,
-    status: { type: String, default: "Processing" }, // Trạng thái: Đang xử lý
-    createdAt: { type: Date, default: Date.now }
+    status: {
+        type: String,
+        default: "Processing"
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
 });
 
 module.exports = mongoose.model('Order', orderSchema);

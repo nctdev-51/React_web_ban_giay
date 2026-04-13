@@ -15,6 +15,8 @@ import {
   SizeSelector,
   useProductDetailUi,
 } from "./ProductDetail";
+import { toggleFavoriteApi } from "../store/authSlice"; 
+import { Heart } from "lucide-react";
 
 export default function ProductDetailPage() {
   return (
@@ -27,6 +29,8 @@ export default function ProductDetailPage() {
 function ProductDetailContent() {
   const { productId } = useParams<{ productId: string }>();
   const dispatch = useAppDispatch();
+
+  const { user, favorites, isLogin } = useAppSelector((state) => state.auth);
   const { product, relatedProducts, isLoading, error } = useAppSelector(
     (state) => state.productDetail,
   );
@@ -41,6 +45,27 @@ function ProductDetailContent() {
     showAddedToast,
     resetUiState,
   } = useProductDetailUi();
+
+  const isFavorite = useMemo(() => {
+    if (!product || !favorites) return false;
+    // Kiểm tra xem ID sản phẩm hiện tại có trong mảng favorites của User không
+    return favorites.some((fav: any) => 
+      typeof fav === "string" ? fav === product._id : fav._id === product._id
+    );
+  }, [favorites, product]);
+
+  const handleToggleFavorite = useCallback(() => {
+    if (!isLogin || !user) {
+      alert("Vui lòng đăng nhập để thêm vào danh sách yêu thích!");
+      return;
+    }
+    
+    if (product) {
+      // Gọi AsyncThunk đã tạo trong authSlice
+      dispatch(toggleFavoriteApi({ userId: user._id, product: product }));
+    }
+  }, [dispatch, isLogin, user, product]);
+
 
   useEffect(() => {
     const id = Number(productId);
@@ -132,6 +157,22 @@ function ProductDetailContent() {
             onAddToCart={handleAddToCart}
             selectedSize={selectedSize}
           />
+
+          {/* NÚT TRÁI TIM */}
+            <button
+              onClick={handleToggleFavorite}
+              className={`w-full py-4 rounded-full border flex items-center justify-center gap-2 transition-all font-medium cursor-pointer
+                ${isFavorite 
+                  ? "bg-red-50 border-red-200 text-red-600" 
+                  : "bg-white border-gray-300 text-black hover:border-black"}`}
+            >
+              <Heart 
+                size={20} 
+                fill={isFavorite ? "currentColor" : "none"} 
+                strokeWidth={isFavorite ? 0 : 2}
+              />
+              {isFavorite ? "Đã yêu thích" : "Yêu thích"}
+            </button>
         </div>
       </section>
 

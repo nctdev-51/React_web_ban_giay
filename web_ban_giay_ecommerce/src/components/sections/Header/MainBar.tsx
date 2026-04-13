@@ -311,12 +311,13 @@ export function MainNav() {
             )}
           </div>
 
-          <button
-            className="h-9 w-9 grid place-items-center rounded-full hover:bg-slate-100"
+          <Link
+            to="/favorites"
+            className="h-9 w-9 grid place-items-center rounded-full hover:bg-slate-100 cursor-pointer"
             aria-label="Favorites"
           >
             ♡
-          </button>
+          </Link>
 
           <Link
             to="/cart"
