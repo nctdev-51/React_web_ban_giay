@@ -1,2 +1,18 @@
 @import "tailwindcss";
 
+/* Tùy chỉnh mũi tên Swiper trang chủ */
+.trending-swiper .swiper-button-next,
+.trending-swiper .swiper-button-prev {
+  color: black !important;
+  background-color: white;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.trending-swiper .swiper-button-next:after,
+.trending-swiper .swiper-button-prev:after {
+  font-size: 20px;
+  font-weight: bold;
+}
