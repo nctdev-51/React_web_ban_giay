@@ -26,7 +26,7 @@ export function TopActionBar({
       <div className="flex items-center gap-6">
         <button
           onClick={toggleFilter}
-          className="flex items-center gap-2 text-[15px] font-medium text-[#111111] hover:text-[#707072] transition-colors"
+          className="flex items-center gap-2 text-[15px] font-medium text-[#111111] hover:text-[#707072] transition-colors cursor-pointer"
         >
           {isFilterOpen ? "Hide Filters" : "Show Filters"}
           <svg
