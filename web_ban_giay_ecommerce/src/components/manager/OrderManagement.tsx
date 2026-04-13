@@ -1,40 +1,119 @@
-import { useState } from 'react';
-import { Package, Truck, CheckCircle, XCircle } from 'lucide-react';
+import { useEffect, useState, type ReactNode } from "react";
+import { Package, Truck, CheckCircle, XCircle } from "lucide-react";
+import { getAllOrders, updateOrderStatus } from "../../api/staffApi";
 
-type OrderStatus = 'pending' | 'shipping' | 'completed' | 'cancelled';
+type OrderStatus = "Processing" | "Đang giao" | "Hoàn thành" | "Đã hủy";
 
-interface Order {
-  id: string;
-  customer: string;
-  date: string;
-  total: number;
-  status: OrderStatus;
-}
+type Order = {
+  _id: string;
+  customerInfo: {
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+    address?: string;
+    phone?: string;
+    paymentMethod?: string;
+  };
+  totalAmount: number;
+  status?: string;
+  createdAt: string;
+};
 
-const initialOrders: Order[] = [
-  { id: '#ORD-0921', customer: 'Nguyễn Văn A', date: '2026-04-11', total: 2900000, status: 'pending' },
-  { id: '#ORD-0922', customer: 'Trần Thị B', date: '2026-04-10', total: 7500000, status: 'shipping' },
-  { id: '#ORD-0923', customer: 'Lê Văn C', date: '2026-04-09', total: 4200000, status: 'completed' },
+const allStatuses: OrderStatus[] = [
+  "Processing",
+  "Đang giao",
+  "Hoàn thành",
+  "Đã hủy",
 ];
 
-export default function OrderManagement() {
-  const [orders, setOrders] = useState<Order[]>(initialOrders);
+const statusConfig: Record<
+  OrderStatus,
+  { label: string; color: string; icon: ReactNode }
+> = {
+  Processing: {
+    label: "Đang xử lý",
+    color: "bg-yellow-100 text-yellow-700",
+    icon: <Package size={14} />,
+  },
+  "Đang giao": {
+    label: "Đang giao",
+    color: "bg-blue-100 text-blue-700",
+    icon: <Truck size={14} />,
+  },
+  "Hoàn thành": {
+    label: "Hoàn thành",
+    color: "bg-green-100 text-green-700",
+    icon: <CheckCircle size={14} />,
+  },
+  "Đã hủy": {
+    label: "Đã hủy",
+    color: "bg-red-100 text-red-700",
+    icon: <XCircle size={14} />,
+  },
+};
 
-  // Cấu hình UI cho từng trạng thái
-  const statusConfig = {
-    pending: { label: 'Đang xử lý', color: 'bg-yellow-100 text-yellow-700', icon: <Package size={14}/> },
-    shipping: { label: 'Đang giao', color: 'bg-blue-100 text-blue-700', icon: <Truck size={14}/> },
-    completed: { label: 'Hoàn thành', color: 'bg-green-100 text-green-700', icon: <CheckCircle size={14}/> },
-    cancelled: { label: 'Đã hủy', color: 'bg-red-100 text-red-700', icon: <XCircle size={14}/> },
+function normalizeStatus(status?: string): OrderStatus {
+  if (status === "Đang giao") return "Đang giao";
+  if (status === "Hoàn thành") return "Hoàn thành";
+  if (status === "Đã hủy") return "Đã hủy";
+  return "Processing";
+}
+
+export default function OrderManagement() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedStatus, setSelectedStatus] = useState<Record<string, OrderStatus>>(
+    {}
+  );
+  const [savingId, setSavingId] = useState<string | null>(null);
+
+  const fetchOrdersList = async () => {
+    try {
+      setLoading(true);
+
+      const data = await getAllOrders();
+      const ordersData: Order[] = Array.isArray(data) ? data : [];
+
+      setOrders(ordersData);
+
+      const statusMap: Record<string, OrderStatus> = {};
+      ordersData.forEach((order) => {
+        statusMap[order._id] = normalizeStatus(order.status);
+      });
+      setSelectedStatus(statusMap);
+    } catch (error: any) {
+      console.error("Lỗi lấy đơn hàng:", error);
+      alert(error?.message || "Không thể tải đơn hàng");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Logic chuyển trạng thái tuyến tính
-  const advanceStatus = (id: string, currentStatus: OrderStatus) => {
-    let nextStatus: OrderStatus = currentStatus;
-    if (currentStatus === 'pending') nextStatus = 'shipping';
-    else if (currentStatus === 'shipping') nextStatus = 'completed';
+  useEffect(() => {
+    fetchOrdersList();
+  }, []);
 
-    setOrders(orders.map(o => o.id === id ? { ...o, status: nextStatus } : o));
+  const getCustomerName = (order: Order) => {
+    const fullName = [order.customerInfo?.firstName, order.customerInfo?.lastName]
+      .filter(Boolean)
+      .join(" ")
+      .trim();
+
+    return fullName || order.customerInfo?.email || "Ẩn danh";
+  };
+
+  const handleSaveStatus = async (orderId: string) => {
+    try {
+      setSavingId(orderId);
+      const status = selectedStatus[orderId] || "Processing";
+      await updateOrderStatus(orderId, status);
+      await fetchOrdersList();
+      alert("Cập nhật trạng thái đơn hàng thành công");
+    } catch (error: any) {
+      alert(error?.message || "Cập nhật trạng thái thất bại");
+    } finally {
+      setSavingId(null);
+    }
   };
 
   return (
@@ -50,49 +129,89 @@ export default function OrderManagement() {
                 <th className="py-3 px-4 font-medium">Khách hàng</th>
                 <th className="py-3 px-4 font-medium">Ngày đặt</th>
                 <th className="py-3 px-4 font-medium">Tổng tiền</th>
-                <th className="py-3 px-4 font-medium">Trạng thái</th>
-                <th className="py-3 px-4 font-medium text-right">Cập nhật</th>
+                <th className="py-3 px-4 font-medium">Trạng thái hiện tại</th>
+                <th className="py-3 px-4 font-medium">Đổi trạng thái</th>
+                <th className="py-3 px-4 font-medium text-right">Lưu</th>
               </tr>
             </thead>
+
             <tbody className="text-sm">
-              {orders.map((order) => {
-                const config = statusConfig[order.status];
-                return (
-                  <tr key={order.id} className="border-b border-gray-100 hover:bg-gray-50 transition">
-                    <td className="py-4 px-4 font-medium text-black">{order.id}</td>
-                    <td className="py-4 px-4 text-gray-700">{order.customer}</td>
-                    <td className="py-4 px-4 text-gray-500">{order.date}</td>
-                    <td className="py-4 px-4 font-medium text-black">
-                      {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.total)}
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${config.color}`}>
-                        {config.icon} {config.label}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 text-right">
-                      {/* Nút bấm chuyển sang trạng thái tiếp theo */}
-                      {order.status === 'pending' && (
-                        <button onClick={() => advanceStatus(order.id, order.status)} className="text-xs bg-black text-white px-3 py-1.5 rounded hover:bg-gray-800 transition">
-                          Giao hàng ngay
+              {loading ? (
+                <tr>
+                  <td colSpan={7} className="text-center py-8 text-gray-500">
+                    Đang tải đơn hàng...
+                  </td>
+                </tr>
+              ) : orders.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="text-center py-8 text-gray-500">
+                    Chưa có đơn hàng nào.
+                  </td>
+                </tr>
+              ) : (
+                orders.map((order) => {
+                  const currentStatus = normalizeStatus(order.status);
+                  const config = statusConfig[currentStatus];
+                  const selected = selectedStatus[order._id] || currentStatus;
+
+                  return (
+                    <tr
+                      key={order._id}
+                      className="border-b border-gray-100 hover:bg-gray-50 transition"
+                    >
+                      <td className="py-4 px-4 font-medium text-black">{order._id}</td>
+                      <td className="py-4 px-4 text-gray-700">{getCustomerName(order)}</td>
+                      <td className="py-4 px-4 text-gray-500">
+                        {new Date(order.createdAt).toLocaleString("vi-VN")}
+                      </td>
+                      <td className="py-4 px-4 font-medium text-black">
+                        {new Intl.NumberFormat("vi-VN", {
+                          style: "currency",
+                          currency: "VND",
+                        }).format(order.totalAmount)}
+                      </td>
+                      <td className="py-4 px-4">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${config.color}`}
+                        >
+                          {config.icon} {config.label}
+                        </span>
+                      </td>
+                      <td className="py-4 px-4">
+                        <select
+                          value={selected}
+                          onChange={(e) =>
+                            setSelectedStatus((prev) => ({
+                              ...prev,
+                              [order._id]: e.target.value as OrderStatus,
+                            }))
+                          }
+                          className="border border-gray-300 rounded-md px-3 py-2 text-sm"
+                        >
+                          {allStatuses.map((status) => (
+                            <option key={status} value={status}>
+                              {status}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td className="py-4 px-4 text-right">
+                        <button
+                          onClick={() => handleSaveStatus(order._id)}
+                          disabled={savingId === order._id}
+                          className="text-xs bg-black text-white px-3 py-2 rounded hover:bg-gray-800 transition disabled:opacity-60"
+                        >
+                          {savingId === order._id ? "Đang lưu..." : "Lưu"}
                         </button>
-                      )}
-                      {order.status === 'shipping' && (
-                        <button onClick={() => advanceStatus(order.id, order.status)} className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 transition">
-                          Xác nhận Đã giao
-                        </button>
-                      )}
-                      {(order.status === 'completed' || order.status === 'cancelled') && (
-                        <span className="text-xs text-gray-400 italic">Không thể đổi</span>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
       </div>
     </div>
   );
-}   
+}
